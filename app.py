@@ -9,6 +9,8 @@ from datetime import datetime
 import json
 import csv
 import tempfile
+import markdown
+from markdown.extensions import codehilite, toc, tables
 
 # Add JEF to Python path
 JEF_PATH = Path("K:/0din/0din-JEF")
@@ -526,6 +528,55 @@ def jef_analyze():
                 'title': file_info['title'],
                 'content_length': len(content)
             }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/file-content/<path:file_path>')
+def get_file_content(file_path):
+    """Get file content for viewing"""
+    try:
+        # Construct full path
+        full_path = search_engine.base_path / file_path
+        
+        # Security check - ensure file is within base path
+        if not str(full_path.resolve()).startswith(str(search_engine.base_path.resolve())):
+            return jsonify({'error': 'Access denied'}), 403
+            
+        # Check if file exists and is a markdown file
+        if not full_path.exists():
+            return jsonify({'error': 'File not found'}), 404
+            
+        if full_path.suffix != '.md':
+            return jsonify({'error': 'Only markdown files are supported'}), 400
+            
+        # Read file content
+        with open(full_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        # Extract metadata
+        metadata = search_engine.extract_metadata(full_path)
+        
+        # Render markdown to HTML
+        md = markdown.Markdown(extensions=[
+            'codehilite',
+            'toc',
+            'tables',
+            'fenced_code',
+            'nl2br'
+        ])
+        html_content = md.convert(content)
+        
+        return jsonify({
+            'success': True,
+            'file_path': file_path,
+            'title': metadata.get('title', full_path.stem),
+            'raw_content': content,
+            'html_content': html_content,
+            'metadata': metadata,
+            'file_size': len(content),
+            'last_modified': full_path.stat().st_mtime
         })
         
     except Exception as e:

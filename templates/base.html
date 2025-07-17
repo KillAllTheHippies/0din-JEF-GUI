@@ -774,6 +774,142 @@
                 margin-left: 1rem;
             }
         }
+
+        /* File Viewer Styles */
+        .file-viewer-content {
+            max-height: 70vh;
+            overflow-y: auto;
+            background: var(--bg-primary);
+        }
+
+        .file-viewer-rendered {
+            padding: 2rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .file-viewer-raw {
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: none;
+            resize: none;
+            width: 100%;
+            min-height: 60vh;
+        }
+
+        .modal-header-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-info {
+            font-size: 0.85rem;
+        }
+
+        /* Markdown content styling */
+        .file-viewer-rendered h1,
+        .file-viewer-rendered h2,
+        .file-viewer-rendered h3,
+        .file-viewer-rendered h4,
+        .file-viewer-rendered h5,
+        .file-viewer-rendered h6 {
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-viewer-rendered h1 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .file-viewer-rendered h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+        }
+
+        .file-viewer-rendered code {
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: var(--text-primary);
+        }
+
+        .file-viewer-rendered pre {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .file-viewer-rendered pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .file-viewer-rendered blockquote {
+            border-left: 4px solid var(--accent-primary);
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .file-viewer-rendered table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        .file-viewer-rendered th,
+        .file-viewer-rendered td {
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .file-viewer-rendered th {
+            background: var(--bg-secondary);
+            font-weight: bold;
+        }
+
+        .file-viewer-rendered a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .file-viewer-rendered a:hover {
+            text-decoration: underline;
+        }
+
+        /* Syntax highlighting for code blocks */
+        .codehilite {
+            background: var(--bg-tertiary) !important;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .codehilite pre {
+            margin: 0;
+            background: none !important;
+            border: none;
+        }
+
+        /* Tree file click cursor */
+        .tree-file {
+            cursor: pointer;
+        }
+
+        .tree-file:hover {
+            background: var(--bg-secondary);
+        }
     </style>
 </head>
 <body>
