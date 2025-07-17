@@ -1,0 +1,1219 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-container">
+    <!-- File Explorer Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-folder-tree"></i> File Explorer
+        </div>
+        
+        <div class="sidebar-controls">
+            <button class="btn btn-sm btn-outline-primary w-100 mb-2" onclick="refreshFileTree()">
+                <i class="fas fa-refresh"></i> Refresh
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick="expandAll()">
+                <i class="fas fa-expand-arrows-alt"></i> Expand All
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick="collapseAll()">
+                <i class="fas fa-compress-arrows-alt"></i> Collapse All
+            </button>
+            <button class="btn btn-sm btn-outline-warning w-100" onclick="clearFilters()">
+                <i class="fas fa-eraser"></i> Clear Filters
+            </button>
+            
+            <div class="filter-status" id="filterStatus">
+                <div>Included: <span id="includedCount">0</span> folders</div>
+                <div>Excluded: <span id="excludedCount">0</span> folders</div>
+            </div>
+        </div>
+        
+        <div class="file-tree" id="fileTree">
+            <div class="text-center p-3">
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div>Loading file tree...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <div class="search-container">
+            <!-- Search Input -->
+            <div class="search-box">
+                <div class="input-group input-group-lg">
+                    <input type="text" class="form-control" id="searchTerms" 
+                           placeholder="Enter search terms... (use quotes for exact phrases)">
+                    <button class="btn btn-primary" type="button" id="searchButton">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                
+                <div class="search-options">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="searchMode" id="modeAll" value="ALL" checked>
+                                <label class="form-check-label" for="modeAll">ALL terms (AND)</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="searchMode" id="modeAny" value="ANY">
+                                <label class="form-check-label" for="modeAny">ANY terms (OR)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="caseSensitive">
+                                <label class="form-check-label" for="caseSensitive">Case sensitive</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filters Panel -->
+            <div class="filters-panel">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="excludeTerms" class="form-label">Exclude terms:</label>
+                        <input type="text" class="form-control" id="excludeTerms" 
+                               placeholder="Terms to exclude from results">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="searchIn" class="form-label">Search in:</label>
+                        <select class="form-select" id="searchIn">
+                            <option value="all">All content</option>
+                            <option value="title">Titles only</option>
+                            <option value="content">Content only</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date range:</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="date" class="form-control" id="dateFrom" placeholder="From">
+                            </div>
+                            <div class="col-6">
+                                <input type="date" class="form-control" id="dateTo" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Stats -->
+            <div id="searchStats" class="search-stats" style="display: none;">
+                <span id="resultsCount">0</span> files found
+                <span id="searchTime" style="margin-left: 1rem;"></span>
+            </div>
+            
+            <!-- Export Buttons -->
+            <div class="export-buttons" id="exportButtons" style="display: none;">
+                <button class="btn btn-success me-2" onclick="exportResults('csv')">
+                    <i class="fas fa-file-csv"></i> Export Full CSV
+                </button>
+                <button class="btn btn-outline-success me-2" onclick="exportResults('csv-paths')">
+                    <i class="fas fa-list"></i> Export Paths Only
+                </button>
+                <button class="btn btn-info" onclick="exportResults('json')">
+                    <i class="fas fa-file-code"></i> Export JSON
+                </button>
+            </div>
+
+            <!-- JEF Analysis Section -->
+            <div class="jef-section" id="jefSection" style="display: none;">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-shield-alt"></i> JEF Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="jef-status" id="jefStatus">
+                            <span class="text-muted">Checking JEF availability...</span>
+                        </div>
+                        <div class="jef-controls" id="jefControls" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="jefTestType" class="form-label">Analysis Type:</label>
+                                    <select id="jefTestType" class="form-select" onchange="toggleReferenceText()">
+                                        <option value="">Select test type...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Selected File:</label>
+                                    <div id="jefSelectedFile" class="form-control-plaintext text-muted">
+                                        Click on a search result to select it
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="jef-reference mt-3" id="jefReference" style="display: none;">
+                                <label for="jefReferenceText" class="form-label">Reference Text:</label>
+                                <textarea id="jefReferenceText" class="form-control" rows="3" 
+                                         placeholder="Enter reference text for copyright analysis..."></textarea>
+                            </div>
+                            <div class="jef-buttons mt-3">
+                                <button onclick="runJefAnalysis('single')" class="btn btn-warning me-2" id="jefSingleBtn" disabled>
+                                    <i class="fas fa-search"></i> Analyze Selected File
+                                </button>
+                                <button onclick="runJefAnalysis('batch')" class="btn btn-danger" id="jefBatchBtn" disabled>
+                                    <i class="fas fa-layer-group"></i> Analyze All Results
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JEF Results -->
+            <div id="jefResults" style="display: none;">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar"></i> JEF Analysis Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- JEF Results Controls -->
+                        <div class="jef-controls-section" id="jefResultsControls" style="display: none;">
+                            <div class="jef-filter-controls">
+                                <label for="jefSortBy" class="form-label mb-0">Sort by:</label>
+                                <select id="jefSortBy" class="form-select" onchange="sortJefResults()">
+                                    <option value="score-desc">Score (High to Low)</option>
+                                    <option value="score-asc">Score (Low to High)</option>
+                                    <option value="percentage-desc">Percentage (High to Low)</option>
+                                    <option value="percentage-asc">Percentage (Low to High)</option>
+                                    <option value="title">Title (A-Z)</option>
+                                    <option value="path">Path (A-Z)</option>
+                                </select>
+                                
+                                <label for="jefFilterScore" class="form-label mb-0">Min Score:</label>
+                                <input type="number" id="jefFilterScore" class="form-control" 
+                                       placeholder="0.0" step="0.01" min="0" max="1" 
+                                       onchange="filterJefResults()">
+                                
+                                <label for="jefFilterPercentage" class="form-label mb-0">Min %:</label>
+                                <input type="number" id="jefFilterPercentage" class="form-control" 
+                                       placeholder="0" step="1" min="0" max="100" 
+                                       onchange="filterJefResults()">
+                                
+                                <button class="btn btn-outline-secondary btn-sm" onclick="clearJefFilters()">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                            
+                            <div class="jef-score-legend">
+                                <div class="jef-score-legend-item">
+                                    <div class="jef-score-legend-color" style="background: linear-gradient(135deg, #ffd700, #ffed4e);"></div>
+                                    <span>Perfect (100%)</span>
+                                </div>
+                                <div class="jef-score-legend-item">
+                                    <div class="jef-score-legend-color" style="background: #22c55e;"></div>
+                                    <span>Excellent (70-99%)</span>
+                                </div>
+                                <div class="jef-score-legend-item">
+                                    <div class="jef-score-legend-color" style="background: #fbbf24;"></div>
+                                    <span>Good (50-69%)</span>
+                                </div>
+                                <div class="jef-score-legend-item">
+                                    <div class="jef-score-legend-color" style="background: #f97316;"></div>
+                                    <span>Moderate (30-49%)</span>
+                                </div>
+                                <div class="jef-score-legend-item">
+                                    <div class="jef-score-legend-color" style="background: #ef4444;"></div>
+                                    <span>Poor (&lt;30%)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="jefResultsContent">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Container -->
+            <div class="results-container">
+                <div id="loadingIndicator" class="loading" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Searching...</span>
+                    </div>
+                    <p class="mt-2">Searching your ChatGPT archive...</p>
+                </div>
+                
+                <div id="noResults" class="no-results" style="display: none;">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5>No results found</h5>
+                    <p>Try different search terms or adjust your filters</p>
+                </div>
+                
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Context Menu -->
+<div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" onclick="contextAction('include')">
+        <i class="fas fa-check-circle text-success"></i> Include this folder
+    </div>
+    <div class="context-menu-item" onclick="contextAction('exclude')">
+        <i class="fas fa-times-circle text-danger"></i> Exclude this folder
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item" onclick="contextAction('includeSubfolders')">
+        <i class="fas fa-check-double text-success"></i> Include folder + subfolders
+    </div>
+    <div class="context-menu-item" onclick="contextAction('excludeSubfolders')">
+        <i class="fas fa-ban text-danger"></i> Exclude folder + subfolders
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item" onclick="contextAction('expandFrom')">
+        <i class="fas fa-sitemap"></i> Expand tree from here
+    </div>
+    <div class="context-menu-item" onclick="contextAction('collapseFrom')">
+        <i class="fas fa-minus-square"></i> Collapse from here
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item" onclick="contextAction('addToIgnore')">
+        <i class="fas fa-eye-slash"></i> Add to ignore list
+    </div>
+    <div class="context-menu-item" onclick="contextAction('removeFromIgnore')">
+        <i class="fas fa-eye"></i> Remove from ignore list
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item" onclick="contextAction('showInResults')">
+        <i class="fas fa-search"></i> Show files in results
+    </div>
+    <div class="context-menu-item" onclick="contextAction('copyPath')">
+        <i class="fas fa-copy"></i> Copy path
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentResults = [];
+let searchStartTime = 0;
+let fileTree = {};
+let expandedFolders = new Set();
+let includedFolders = new Set();
+let excludedFolders = new Set();
+let ignoredItems = new Set();
+let currentContextPath = '';
+let currentContextItem = null;
+let jefAvailable = false;
+let jefTests = [];
+let selectedFile = null;
+let jefResultsData = [];
+let currentJefTestType = '';
+
+// Debounce function to limit search frequency
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Perform search
+function performSearch() {
+    const searchTerms = $('#searchTerms').val().trim();
+    
+    if (!searchTerms) {
+        $('#searchResults').empty();
+        $('#searchStats').hide();
+        $('#exportButtons').hide();
+        return;
+    }
+    
+    const searchData = {
+        terms: searchTerms,
+        exclude: $('#excludeTerms').val().trim(),
+        mode: $('input[name="searchMode"]:checked').val(),
+        searchIn: $('#searchIn').val(),
+        caseSensitive: $('#caseSensitive').is(':checked'),
+        dateFrom: $('#dateFrom').val(),
+        dateTo: $('#dateTo').val(),
+        includedFolders: Array.from(includedFolders),
+        excludedFolders: Array.from(excludedFolders)
+    };
+    
+    // Show loading indicator
+    $('#loadingIndicator').show();
+    $('#searchResults').empty();
+    $('#noResults').hide();
+    $('#searchStats').hide();
+    $('#exportButtons').hide();
+    
+    searchStartTime = Date.now();
+    
+    // Perform AJAX search
+    $.ajax({
+        url: '/search',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(searchData),
+        success: function(response) {
+            $('#loadingIndicator').hide();
+            
+            if (response.success) {
+                currentResults = response.results;
+                displayResults(response.results);
+                
+                // Show search stats
+                const searchTime = Date.now() - searchStartTime;
+                $('#resultsCount').text(response.count);
+                $('#searchTime').text(`(${searchTime}ms)`);
+                $('#searchStats').show();
+                
+                // Show export buttons if there are results
+                if (response.count > 0) {
+                    $('#exportButtons').show();
+                    // Show JEF section if available and there are results
+                    if (jefAvailable) {
+                        $('#jefSection').show();
+                    }
+                }
+            } else {
+                $('#noResults').show();
+                console.error('Search error:', response.error);
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#loadingIndicator').hide();
+            $('#noResults').show();
+            console.error('AJAX error:', error);
+        }
+    });
+}
+
+// Display search results
+function displayResults(results) {
+    const container = $('#searchResults');
+    container.empty();
+    
+    if (results.length === 0) {
+        $('#noResults').show();
+        return;
+    }
+    
+    results.forEach(function(result, index) {
+        const resultHtml = `
+            <div class="result-item" onclick="selectFileForJef('${escapeHtml(result.path)}', '${escapeHtml(result.title)}', ${index})" 
+                 data-file-path="${escapeHtml(result.path)}" data-file-title="${escapeHtml(result.title)}">
+                <div class="result-title">${escapeHtml(result.title)}</div>
+                <div class="result-path">${escapeHtml(result.path)}</div>
+                <div class="result-meta">
+                    <span class="match-count">${result.matches} matches</span>
+                    <span class="ms-3">Modified: ${result.modified_date}</span>
+                    <span class="ms-3">Size: ${formatFileSize(result.file_size)}</span>
+                    ${result.create_time ? `<span class="ms-3">Created: ${result.create_time}</span>` : ''}
+                </div>
+            </div>
+        `;
+        container.append(resultHtml);
+    });
+}
+
+// Utility functions
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Export results
+function exportResults(format) {
+    // Show path type selection for CSV exports
+    let pathType = 'relative';
+    if (format === 'csv' || format === 'csv-paths') {
+        const userChoice = prompt('Choose path type:\n\n1 = Relative paths (e.g., 2024/11/file.md)\n2 = Full paths (e.g., C:\\full\\path\\to\\file.md)\n\nEnter 1 or 2:', '1');
+        
+        // Handle user cancellation or invalid input
+        if (userChoice === null) {
+            return; // User cancelled
+        }
+        
+        pathType = (userChoice === '2') ? 'full' : 'relative';
+    }
+    
+    const searchParams = new URLSearchParams({
+        terms: $('#searchTerms').val().trim(),
+        exclude: $('#excludeTerms').val().trim(),
+        mode: $('input[name="searchMode"]:checked').val(),
+        searchIn: $('#searchIn').val(),
+        caseSensitive: $('#caseSensitive').is(':checked'),
+        dateFrom: $('#dateFrom').val(),
+        dateTo: $('#dateTo').val(),
+        pathType: pathType
+    });
+    
+    window.open(`/export/${format}?${searchParams.toString()}`, '_blank');
+}
+
+// File Tree Management
+function loadFileTree() {
+    $.ajax({
+        url: '/api/file-tree',
+        method: 'GET',
+        success: function(data) {
+            fileTree = data;
+            renderFileTree();
+        },
+        error: function() {
+            $('#fileTree').html('<div class="text-danger p-3">Error loading file tree</div>');
+        }
+    });
+}
+
+function renderFileTree() {
+    const container = $('#fileTree');
+    container.empty();
+    
+    function renderNode(node, path = '', level = 0) {
+        const isFolder = node.type === 'folder';
+        const isExpanded = expandedFolders.has(path);
+        const isIncluded = includedFolders.has(path);
+        const isExcluded = excludedFolders.has(path);
+        const isIgnored = ignoredItems.has(path);
+        
+        if (isIgnored) return '';
+        
+        let classes = ['tree-item'];
+        if (isFolder) classes.push('tree-folder');
+        else classes.push('tree-file');
+        if (isIncluded) classes.push('included');
+        if (isExcluded) classes.push('excluded');
+        
+        const indent = 'tree-indent '.repeat(level);
+        const toggle = isFolder ? 
+            `<span class="tree-toggle" onclick="toggleFolder('${path}')">${isExpanded ? '▼' : '▶'}</span>` : 
+            '<span class="tree-toggle"></span>';
+        const icon = isFolder ? 
+            '<i class="fas fa-folder tree-icon"></i>' : 
+            '<i class="fas fa-file-alt tree-icon"></i>';
+        
+        let html = `
+            <div class="${classes.join(' ')}" 
+                 data-path="${path}" 
+                 oncontextmenu="showContextMenu(event, '${path}', this); return false;"
+                 onclick="selectItem('${path}', this)">
+                <span class="${indent}"></span>
+                ${toggle}
+                ${icon}
+                ${node.name}
+            </div>
+        `;
+        
+        if (isFolder && isExpanded && node.children) {
+            for (const [childName, childNode] of Object.entries(node.children)) {
+                const childPath = path ? `${path}/${childName}` : childName;
+                html += renderNode(childNode, childPath, level + 1);
+            }
+        }
+        
+        return html;
+    }
+    
+    for (const [rootName, rootNode] of Object.entries(fileTree)) {
+        container.append(renderNode(rootNode, rootName, 0));
+    }
+    
+    updateFilterStatus();
+}
+
+function toggleFolder(path) {
+    if (expandedFolders.has(path)) {
+        expandedFolders.delete(path);
+    } else {
+        expandedFolders.add(path);
+    }
+    renderFileTree();
+}
+
+function selectItem(path, element) {
+    $('.tree-item').removeClass('selected');
+    $(element).addClass('selected');
+}
+
+function showContextMenu(event, path, element) {
+    event.preventDefault();
+    currentContextPath = path;
+    currentContextItem = element;
+    
+    const menu = $('#contextMenu');
+    menu.css({
+        left: event.pageX + 'px',
+        top: event.pageY + 'px'
+    }).show();
+}
+
+function contextAction(action) {
+    $('#contextMenu').hide();
+    
+    if (!currentContextPath) return;
+    
+    switch (action) {
+        case 'include':
+            includedFolders.add(currentContextPath);
+            excludedFolders.delete(currentContextPath);
+            break;
+            
+        case 'exclude':
+            excludedFolders.add(currentContextPath);
+            includedFolders.delete(currentContextPath);
+            break;
+            
+        case 'includeSubfolders':
+            includeSubfolders(currentContextPath);
+            break;
+            
+        case 'excludeSubfolders':
+            excludeSubfolders(currentContextPath);
+            break;
+            
+        case 'expandFrom':
+            expandFromPath(currentContextPath);
+            break;
+            
+        case 'collapseFrom':
+            collapseFromPath(currentContextPath);
+            break;
+            
+        case 'addToIgnore':
+            ignoredItems.add(currentContextPath);
+            break;
+            
+        case 'removeFromIgnore':
+            ignoredItems.delete(currentContextPath);
+            break;
+            
+        case 'showInResults':
+            searchInPath(currentContextPath);
+            break;
+            
+        case 'copyPath':
+            copyToClipboard(currentContextPath);
+            break;
+    }
+    
+    renderFileTree();
+    
+    // Update search if there are current search terms
+    if ($('#searchTerms').val().trim()) {
+        performSearch();
+    }
+}
+
+function includeSubfolders(path) {
+    includedFolders.add(path);
+    excludedFolders.delete(path);
+    
+    // Recursively include all subfolders
+    function includeChildren(node, currentPath) {
+        if (node.type === 'folder' && node.children) {
+            for (const [childName, childNode] of Object.entries(node.children)) {
+                const childPath = currentPath ? `${currentPath}/${childName}` : childName;
+                if (childNode.type === 'folder') {
+                    includedFolders.add(childPath);
+                    excludedFolders.delete(childPath);
+                    includeChildren(childNode, childPath);
+                }
+            }
+        }
+    }
+    
+    const node = getNodeByPath(path);
+    if (node) {
+        includeChildren(node, path);
+    }
+}
+
+function excludeSubfolders(path) {
+    excludedFolders.add(path);
+    includedFolders.delete(path);
+    
+    // Recursively exclude all subfolders
+    function excludeChildren(node, currentPath) {
+        if (node.type === 'folder' && node.children) {
+            for (const [childName, childNode] of Object.entries(node.children)) {
+                const childPath = currentPath ? `${currentPath}/${childName}` : childName;
+                if (childNode.type === 'folder') {
+                    excludedFolders.add(childPath);
+                    includedFolders.delete(childPath);
+                    excludeChildren(childNode, childPath);
+                }
+            }
+        }
+    }
+    
+    const node = getNodeByPath(path);
+    if (node) {
+        excludeChildren(node, path);
+    }
+}
+
+function expandFromPath(path) {
+    expandedFolders.add(path);
+    
+    function expandChildren(node, currentPath) {
+        if (node.type === 'folder' && node.children) {
+            for (const [childName, childNode] of Object.entries(node.children)) {
+                const childPath = currentPath ? `${currentPath}/${childName}` : childName;
+                if (childNode.type === 'folder') {
+                    expandedFolders.add(childPath);
+                    expandChildren(childNode, childPath);
+                }
+            }
+        }
+    }
+    
+    const node = getNodeByPath(path);
+    if (node) {
+        expandChildren(node, path);
+    }
+}
+
+function collapseFromPath(path) {
+    function collapseChildren(node, currentPath) {
+        if (node.type === 'folder' && node.children) {
+            for (const [childName, childNode] of Object.entries(node.children)) {
+                const childPath = currentPath ? `${currentPath}/${childName}` : childName;
+                if (childNode.type === 'folder') {
+                    expandedFolders.delete(childPath);
+                    collapseChildren(childNode, childPath);
+                }
+            }
+        }
+    }
+    
+    const node = getNodeByPath(path);
+    if (node) {
+        collapseChildren(node, path);
+    }
+}
+
+function getNodeByPath(path) {
+    const parts = path.split('/');
+    let current = fileTree;
+    
+    for (const part of parts) {
+        if (current[part]) {
+            current = current[part];
+        } else {
+            return null;
+        }
+        if (current.children) {
+            current = current.children;
+        }
+    }
+    
+    return current;
+}
+
+function searchInPath(path) {
+    // Set search to focus on this path
+    $('#searchTerms').val(`path:"${path}"`);
+    performSearch();
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Show brief success message
+        const toast = $('<div class="alert alert-success position-fixed" style="top: 20px; right: 20px; z-index: 9999;">Path copied to clipboard!</div>');
+        $('body').append(toast);
+        setTimeout(() => toast.remove(), 2000);
+    });
+}
+
+function refreshFileTree() {
+    loadFileTree();
+}
+
+function expandAll() {
+    function addAllFolders(node, currentPath) {
+        if (node.type === 'folder') {
+            expandedFolders.add(currentPath);
+            if (node.children) {
+                for (const [childName, childNode] of Object.entries(node.children)) {
+                    const childPath = currentPath ? `${currentPath}/${childName}` : childName;
+                    addAllFolders(childNode, childPath);
+                }
+            }
+        }
+    }
+    
+    for (const [rootName, rootNode] of Object.entries(fileTree)) {
+        addAllFolders(rootNode, rootName);
+    }
+    
+    renderFileTree();
+}
+
+function collapseAll() {
+    expandedFolders.clear();
+    renderFileTree();
+}
+
+function clearFilters() {
+    includedFolders.clear();
+    excludedFolders.clear();
+    ignoredItems.clear();
+    renderFileTree();
+    
+    // Re-run search if there are search terms
+    if ($('#searchTerms').val().trim()) {
+        performSearch();
+    }
+}
+
+function updateFilterStatus() {
+    $('#includedCount').text(includedFolders.size);
+    $('#excludedCount').text(excludedFolders.size);
+}
+
+// JEF Integration Functions
+function checkJefStatus() {
+    $.get('/api/jef-status')
+        .done(function(response) {
+            jefAvailable = response.available;
+            if (jefAvailable) {
+                $('#jefStatus').html('<span class="text-success"><i class="fas fa-check-circle"></i> JEF is available</span>');
+                loadJefTests();
+            } else {
+                $('#jefStatus').html('<span class="text-danger"><i class="fas fa-times-circle"></i> JEF not available</span>');
+            }
+        })
+        .fail(function() {
+            $('#jefStatus').html('<span class="text-danger"><i class="fas fa-times-circle"></i> Error checking JEF status</span>');
+        });
+}
+
+function loadJefTests() {
+    $.get('/api/jef-tests')
+        .done(function(response) {
+            jefTests = response.tests;
+            const select = $('#jefTestType');
+            select.empty().append('<option value="">Select test type...</option>');
+            
+            jefTests.forEach(function(test) {
+                select.append(`<option value="${test.id}" data-requires-reference="${test.requires_reference}">${test.name}</option>`);
+            });
+            
+            $('#jefControls').show();
+        })
+        .fail(function() {
+            $('#jefStatus').html('<span class="text-danger"><i class="fas fa-times-circle"></i> Error loading JEF tests</span>');
+        });
+}
+
+function toggleReferenceText() {
+    const selectedOption = $('#jefTestType option:selected');
+    const requiresReference = selectedOption.data('requires-reference');
+    
+    if (requiresReference) {
+        $('#jefReference').show();
+    } else {
+        $('#jefReference').hide();
+    }
+    
+    updateJefButtons();
+}
+
+function selectFileForJef(filePath, fileTitle, index) {
+    // Remove previous selection highlighting
+    $('.result-item').removeClass('selected');
+    
+    // Add selection highlighting
+    $(`.result-item[data-file-path="${filePath}"]`).addClass('selected');
+    
+    selectedFile = {
+        path: filePath,
+        title: fileTitle,
+        index: index
+    };
+    
+    $('#jefSelectedFile').text(fileTitle);
+    updateJefButtons();
+}
+
+function updateJefButtons() {
+    const testSelected = $('#jefTestType').val();
+    const fileSelected = selectedFile !== null;
+    const hasResults = currentResults.length > 0;
+    
+    $('#jefSingleBtn').prop('disabled', !testSelected || !fileSelected);
+    $('#jefBatchBtn').prop('disabled', !testSelected || !hasResults);
+}
+
+function runJefAnalysis(mode) {
+    const testType = $('#jefTestType').val();
+    const referenceText = $('#jefReferenceText').val();
+    
+    if (!testType) {
+        alert('Please select a test type');
+        return;
+    }
+    
+    const selectedTest = jefTests.find(t => t.id === testType);
+    if (selectedTest.requires_reference && !referenceText.trim()) {
+        alert('This test requires reference text');
+        return;
+    }
+    
+    // Store current test type for color coding
+    currentJefTestType = testType;
+    
+    if (mode === 'single') {
+        if (!selectedFile) {
+            alert('Please select a file to analyze');
+            return;
+        }
+        runSingleJefAnalysis(selectedFile.path, testType, referenceText);
+    } else if (mode === 'batch') {
+        runBatchJefAnalysis(testType, referenceText);
+    }
+}
+
+function runSingleJefAnalysis(filePath, testType, referenceText) {
+    const data = {
+        file_path: filePath,
+        test_type: testType,
+        reference_text: referenceText
+    };
+    
+    $('#jefResultsContent').html('<div class="text-center"><div class="spinner-border" role="status"></div><p class="mt-2">Running JEF analysis...</p></div>');
+    $('#jefResults').show();
+    
+    $.ajax({
+        url: '/api/jef-analyze',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            displayJefResults([response], 'single');
+        },
+        error: function(xhr) {
+            const error = xhr.responseJSON ? xhr.responseJSON.error : 'Analysis failed';
+            $('#jefResultsContent').html(`<div class="alert alert-danger">Error: ${error}</div>`);
+        }
+    });
+}
+
+function runBatchJefAnalysis(testType, referenceText) {
+    const filePaths = currentResults.map(r => r.path);
+    const data = {
+        file_paths: filePaths,
+        test_type: testType,
+        reference_text: referenceText
+    };
+    
+    $('#jefResultsContent').html(`<div class="text-center"><div class="spinner-border" role="status"></div><p class="mt-2">Running JEF analysis on ${filePaths.length} files...</p></div>`);
+    $('#jefResults').show();
+    
+    $.ajax({
+        url: '/api/jef-batch-analyze',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            displayJefResults(response.results, 'batch', response);
+        },
+        error: function(xhr) {
+            const error = xhr.responseJSON ? xhr.responseJSON.error : 'Batch analysis failed';
+            $('#jefResultsContent').html(`<div class="alert alert-danger">Error: ${error}</div>`);
+        }
+    });
+}
+
+function getScoreColorClass(result, testType) {
+    // Extract percentage for color coding
+    let percentage = 0;
+    if (result && typeof result === 'object' && result.percentage !== undefined) {
+        percentage = result.percentage;
+    } else if (typeof result === 'number') {
+        percentage = result * 100; // Convert score to percentage if needed
+    }
+    
+    // Perfect score gets golden color
+    if (percentage >= 100) return 'jef-score-perfect';
+    
+    // For methamphetamine test, 70%+ is excellent (green)
+    // For other tests, use general thresholds
+    if (testType === 'meth') {
+        if (percentage >= 70) return 'jef-score-excellent';
+        if (percentage >= 50) return 'jef-score-good';
+        if (percentage >= 30) return 'jef-score-moderate';
+        return 'jef-score-poor';
+    } else {
+        // General thresholds for other tests
+        if (percentage >= 70) return 'jef-score-excellent';
+        if (percentage >= 50) return 'jef-score-good';
+        if (percentage >= 30) return 'jef-score-moderate';
+        return 'jef-score-poor';
+    }
+}
+
+function displayJefResults(results, mode, batchInfo = null) {
+    // Store results data for sorting/filtering
+    if (Array.isArray(results)) {
+        jefResultsData = results.map(r => ({...r, mode, testType: currentJefTestType}));
+    } else {
+        jefResultsData = [{...results, mode, testType: currentJefTestType}];
+    }
+    
+    // Show controls for batch results
+    if (mode === 'batch' && Array.isArray(results) && results.length > 1) {
+        $('#jefResultsControls').show();
+    } else {
+        $('#jefResultsControls').hide();
+    }
+    
+    renderJefResults(jefResultsData, batchInfo);
+}
+
+function renderJefResults(results, batchInfo = null) {
+    let html = '';
+    
+    if (batchInfo) {
+        html += `
+            <div class="alert alert-info">
+                <h6>Batch Analysis Summary</h6>
+                <p>Total files: ${batchInfo.total_files} | Successful analyses: ${batchInfo.successful_analyses}</p>
+            </div>
+        `;
+    }
+    
+    function formatJefScore(result) {
+        if (typeof result === 'number') {
+            return result.toFixed(4);
+        } else if (result && typeof result === 'object') {
+            // Handle JEF ScoreType object based on types.py structure
+            let output = '';
+            
+            if (result.score !== undefined) {
+                output += `Score: ${typeof result.score === 'number' ? result.score.toFixed(4) : result.score}`;
+            }
+            
+            if (result.percentage !== undefined) {
+                if (output) output += ' | ';
+                output += `Percentage: ${typeof result.percentage === 'number' ? result.percentage.toFixed(2) : result.percentage}%`;
+            }
+            
+            
+            // For copyright analysis, show additional details
+            if (result.ngram_scores !== undefined) {
+                if (output) output += '<br>';
+                output += `N-gram Score: ${typeof result.ngram_scores === 'number' ? result.ngram_scores.toFixed(4) : result.ngram_scores}`;
+            }
+            
+            if (result.sentence_scores !== undefined) {
+                if (output) output += ' | ';
+                output += `Sentence Score: ${typeof result.sentence_scores === 'number' ? result.sentence_scores.toFixed(4) : result.sentence_scores}`;
+            }
+            
+            // Show matches if available
+            if (result.matches && Array.isArray(result.matches) && result.matches.length > 0) {
+                if (output) output += '<br>';
+                output += `<small>Matches: ${result.matches.slice(0, 3).join(', ')}${result.matches.length > 3 ? '...' : ''}</small>`;
+            }
+            
+            // Show missing if available
+            if (result.missing && Array.isArray(result.missing) && result.missing.length > 0) {
+                if (output) output += '<br>';
+                output += `<small>Missing: ${result.missing.slice(0, 3).join(', ')}${result.missing.length > 3 ? '...' : ''}</small>`;
+            }
+            
+            return output || JSON.stringify(result);
+        } else {
+            return String(result);
+        }
+    }
+    
+    if (Array.isArray(results)) {
+        results.forEach(function(result, index) {
+            const success = result.success;
+            const baseAlertClass = success ? 'alert-success' : 'alert-danger';
+            const colorClass = success ? getScoreColorClass(result.result, result.testType || currentJefTestType) : '';
+            const alertClass = success ? colorClass : baseAlertClass;
+            const icon = success ? 'fa-check-circle' : 'fa-times-circle';
+            
+            html += `
+                <div class="alert ${alertClass}" data-score="${success && result.result?.score ? result.result.score : 0}" 
+                     data-percentage="${success && result.result?.percentage ? result.result.percentage : 0}">
+                    <h6><i class="fas ${icon}"></i> ${result.mode === 'single' ? result.file_info?.title || result.file_path : result.title || result.file_path}</h6>
+                    ${result.mode === 'batch' ? `<p class="mb-1"><small>Path: ${result.file_path}</small></p>` : ''}
+                    ${success ? 
+                        `<div><strong>JEF Analysis:</strong><br>${formatJefScore(result.result)}</div>` :
+                        `<p><strong>Error:</strong> ${result.error}</p>`
+                    }
+                    ${success && result.content_length ? `<p><small>Content length: ${result.content_length} characters</small></p>` : ''}
+                </div>
+            `;
+        });
+    } else {
+        // Single result
+        const success = results.success;
+        const baseAlertClass = success ? 'alert-success' : 'alert-danger';
+        const colorClass = success ? getScoreColorClass(results.result, results.testType || currentJefTestType) : '';
+        const alertClass = success ? colorClass : baseAlertClass;
+        const icon = success ? 'fa-check-circle' : 'fa-times-circle';
+        
+        html = `
+            <div class="alert ${alertClass}" data-score="${success && results.result?.score ? results.result.score : 0}" 
+                 data-percentage="${success && results.result?.percentage ? results.result.percentage : 0}">
+                <h6><i class="fas ${icon}"></i> ${results.file_info?.title || 'Analysis Result'}</h6>
+                <p><small>Path: ${results.file_info?.path}</small></p>
+                ${success ? 
+                    `<div><strong>JEF Analysis:</strong><br>${formatJefScore(results.result)}</div>` :
+                    `<p><strong>Error:</strong> ${results.error}</p>`
+                }
+                ${success && results.file_info?.content_length ? `<p><small>Content length: ${results.file_info.content_length} characters</small></p>` : ''}
+            </div>
+        `;
+    }
+    
+    $('#jefResultsContent').html(html);
+}
+
+// JEF Results Sorting and Filtering
+function sortJefResults() {
+    const sortBy = $('#jefSortBy').val();
+    const sortedResults = [...jefResultsData];
+    
+    sortedResults.sort((a, b) => {
+        switch (sortBy) {
+            case 'score-desc':
+                return (b.result?.score || 0) - (a.result?.score || 0);
+            case 'score-asc':
+                return (a.result?.score || 0) - (b.result?.score || 0);
+            case 'percentage-desc':
+                return (b.result?.percentage || 0) - (a.result?.percentage || 0);
+            case 'percentage-asc':
+                return (a.result?.percentage || 0) - (b.result?.percentage || 0);
+            case 'title':
+                return (a.title || a.file_path || '').localeCompare(b.title || b.file_path || '');
+            case 'path':
+                return (a.file_path || '').localeCompare(b.file_path || '');
+            default:
+                return 0;
+        }
+    });
+    
+    renderJefResults(applyJefFilters(sortedResults));
+}
+
+function filterJefResults() {
+    const sortedResults = getSortedJefResults();
+    renderJefResults(applyJefFilters(sortedResults));
+}
+
+function getSortedJefResults() {
+    const sortBy = $('#jefSortBy').val();
+    const sortedResults = [...jefResultsData];
+    
+    sortedResults.sort((a, b) => {
+        switch (sortBy) {
+            case 'score-desc':
+                return (b.result?.score || 0) - (a.result?.score || 0);
+            case 'score-asc':
+                return (a.result?.score || 0) - (b.result?.score || 0);
+            case 'percentage-desc':
+                return (b.result?.percentage || 0) - (a.result?.percentage || 0);
+            case 'percentage-asc':
+                return (a.result?.percentage || 0) - (b.result?.percentage || 0);
+            case 'title':
+                return (a.title || a.file_path || '').localeCompare(b.title || b.file_path || '');
+            case 'path':
+                return (a.file_path || '').localeCompare(b.file_path || '');
+            default:
+                return 0;
+        }
+    });
+    
+    return sortedResults;
+}
+
+function applyJefFilters(results) {
+    const minScore = parseFloat($('#jefFilterScore').val()) || 0;
+    const minPercentage = parseFloat($('#jefFilterPercentage').val()) || 0;
+    
+    return results.filter(result => {
+        if (!result.success) return true; // Always show errors
+        
+        const score = result.result?.score || 0;
+        const percentage = result.result?.percentage || 0;
+        
+        return score >= minScore && percentage >= minPercentage;
+    });
+}
+
+function clearJefFilters() {
+    $('#jefFilterScore').val('');
+    $('#jefFilterPercentage').val('');
+    $('#jefSortBy').val('score-desc');
+    renderJefResults(jefResultsData);
+}
+
+// Event listeners
+$(document).ready(function() {
+    // Search button click
+    $('#searchButton').click(performSearch);
+    
+    // Enter key in search box
+    $('#searchTerms').keypress(function(e) {
+        if (e.which === 13) {
+            performSearch();
+        }
+    });
+    
+    // Live search with debouncing
+    $('#searchTerms').on('input', debounce(performSearch, 500));
+    
+    // Filter changes trigger search
+    $('#excludeTerms, #searchIn, #dateFrom, #dateTo').on('change', function() {
+        if ($('#searchTerms').val().trim()) {
+            performSearch();
+        }
+    });
+    
+    $('input[name="searchMode"], #caseSensitive').on('change', function() {
+        if ($('#searchTerms').val().trim()) {
+            performSearch();
+        }
+    });
+    
+    // Focus on search box
+    $('#searchTerms').focus();
+    
+    // Load file tree
+    loadFileTree();
+    
+    // Check JEF status
+    checkJefStatus();
+    
+    // Hide context menu on click outside
+    $(document).click(function() {
+        $('#contextMenu').hide();
+    });
+    
+    // Prevent context menu from closing when clicking inside it
+    $('#contextMenu').click(function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
+{% endblock %}
