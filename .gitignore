@@ -1,5 +1,6 @@
 .rovodev/
 .agent.md
+
 # Exclude ChatGPT chats folder
 ChatGPT chats/
 
