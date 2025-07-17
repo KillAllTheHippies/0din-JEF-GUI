@@ -1227,7 +1227,7 @@ function clearJefFilters() {
 }
 
 // Toggle result content expansion
-// TODO: Switch to lazy loading instead of full content inclusion - search results are too slow with full content
+// Uses lazy loading - content is fetched via AJAX only when first expanded
 function toggleResultContent(event, index) {
     event.stopPropagation(); // Prevent triggering JEF selection
     
@@ -1253,20 +1253,85 @@ function toggleResultContent(event, index) {
     }
 }
 
-// Display inline content from search results (no AJAX needed)
+// Lazy load content from API when needed
 function displayInlineContent(index) {
     const contentDiv = $(`#content-${index}`);
     const result = currentResults[index];
     
-    if (!result || !result.html_content) {
+    if (!result) {
         contentDiv.html(`
-            <div class="alert alert-warning m-3">
+            <div class="alert alert-danger m-3">
                 <i class="fas fa-exclamation-triangle"></i> 
-                Content not available for this file.
+                Result not found.
             </div>
         `);
         return;
     }
+    
+    // Check if content is already cached
+    const cachedData = contentDiv.data('fileData');
+    if (cachedData && cachedData.html_content) {
+        displayCachedContent(index, cachedData);
+        return;
+    }
+    
+    // Show loading state
+    contentDiv.html(`
+        <div class="result-content-inner">
+            <div class="text-center p-4">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="mt-2">Loading content...</div>
+            </div>
+        </div>
+    `);
+    
+    // Load content via AJAX
+    $.ajax({
+        url: `/api/file-content/${encodeURIComponent(result.path)}`,
+        method: 'GET',
+        success: function(data) {
+            if (data.success) {
+                const fileData = {
+                    raw_content: data.raw_content,
+                    html_content: data.html_content,
+                    file_path: data.file_path,
+                    title: data.title
+                };
+                
+                // Cache the data
+                contentDiv.data('fileData', fileData);
+                
+                // Display the content
+                displayCachedContent(index, fileData);
+            } else {
+                contentDiv.html(`
+                    <div class="alert alert-danger m-3">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Error loading content: ${escapeHtml(data.error || 'Unknown error')}
+                    </div>
+                `);
+            }
+        },
+        error: function(xhr) {
+            let errorMsg = 'Failed to load content';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMsg = xhr.responseJSON.error;
+            }
+            contentDiv.html(`
+                <div class="alert alert-warning m-3">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    ${escapeHtml(errorMsg)}
+                </div>
+            `);
+        }
+    });
+}
+
+// Display cached content
+function displayCachedContent(index, fileData) {
+    const contentDiv = $(`#content-${index}`);
     
     const contentHtml = `
         <div class="result-content-inner">
@@ -1280,23 +1345,15 @@ function displayInlineContent(index) {
             </div>
             <div class="content-display">
                 <div class="content-rendered" id="rendered-${index}">
-                    ${result.html_content}
+                    ${fileData.html_content}
                 </div>
                 <div class="content-raw" id="raw-${index}" style="display: none;">
-                    <pre><code>${escapeHtml(result.raw_content)}</code></pre>
+                    <pre><code>${escapeHtml(fileData.raw_content)}</code></pre>
                 </div>
             </div>
         </div>
     `;
     contentDiv.html(contentHtml);
-    
-    // Store the data for copy functionality
-    contentDiv.data('fileData', {
-        raw_content: result.raw_content,
-        html_content: result.html_content,
-        file_path: result.path,
-        title: result.title
-    });
 }
 
 // Toggle between rendered and raw view for result content

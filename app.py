@@ -228,17 +228,6 @@ class ChatSearchEngine:
                 if has_match:
                     relative_path = str(file_path.relative_to(self.base_path))
                     
-                    # TODO: Switch to lazy loading - including full content makes search too slow
-                    # Render markdown to HTML for inline display
-                    md = markdown.Markdown(extensions=[
-                        'codehilite',
-                        'toc',
-                        'tables',
-                        'fenced_code',
-                        'nl2br'
-                    ])
-                    html_content = md.convert(file_info['content'])
-                    
                     results.append({
                         'path': relative_path,
                         'title': file_info['title'],
@@ -246,9 +235,7 @@ class ChatSearchEngine:
                         'file_size': file_info['file_size'],
                         'modified_date': file_info['modified_date'].strftime('%Y-%m-%d %H:%M'),
                         'create_time': file_info['metadata'].get('create_time', ''),
-                        'conversation_id': file_info['metadata'].get('conversation_id', ''),
-                        'raw_content': file_info['content'],
-                        'html_content': html_content
+                        'conversation_id': file_info['metadata'].get('conversation_id', '')
                     })
             except Exception as e:
                 print(f"Error processing {file_path}: {e}")
