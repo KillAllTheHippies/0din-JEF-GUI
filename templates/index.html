@@ -443,15 +443,29 @@ function displayResults(results) {
     
     results.forEach(function(result, index) {
         const resultHtml = `
-            <div class="result-item" onclick="selectFileForJef('${escapeHtml(result.path)}', '${escapeHtml(result.title)}', ${index})" 
-                 data-file-path="${escapeHtml(result.path)}" data-file-title="${escapeHtml(result.title)}">
-                <div class="result-title">${escapeHtml(result.title)}</div>
-                <div class="result-path">${escapeHtml(result.path)}</div>
-                <div class="result-meta">
-                    <span class="match-count">${result.matches} matches</span>
-                    <span class="ms-3">Modified: ${result.modified_date}</span>
-                    <span class="ms-3">Size: ${formatFileSize(result.file_size)}</span>
-                    ${result.create_time ? `<span class="ms-3">Created: ${result.create_time}</span>` : ''}
+            <div class="result-item" data-file-path="${escapeHtml(result.path)}" data-file-title="${escapeHtml(result.title)}" data-index="${index}">
+                <div class="result-header" onclick="selectFileForJef('${result.path.replace(/'/g, "\\'")}', '${escapeHtml(result.title)}', ${index})">
+                    <div class="result-title">${escapeHtml(result.title)}</div>
+                    <div class="result-path">
+                        <span class="path-text">${escapeHtml(result.path)}</span>
+                        <button class="btn btn-sm btn-outline-primary ms-2 expand-btn" onclick="toggleResultContent(event, ${index})" title="Expand/Collapse content">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="result-meta">
+                        <span class="match-count">${result.matches} matches</span>
+                        <span class="ms-3">Modified: ${result.modified_date}</span>
+                        <span class="ms-3">Size: ${formatFileSize(result.file_size)}</span>
+                        ${result.create_time ? `<span class="ms-3">Created: ${result.create_time}</span>` : ''}
+                    </div>
+                </div>
+                <div class="result-content" id="content-${index}" style="display: none;">
+                    <div class="content-loading">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="ms-2">Loading content...</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -1212,6 +1226,116 @@ function clearJefFilters() {
     renderJefResults(jefResultsData);
 }
 
+// Toggle result content expansion
+// TODO: Switch to lazy loading instead of full content inclusion - search results are too slow with full content
+function toggleResultContent(event, index) {
+    event.stopPropagation(); // Prevent triggering JEF selection
+    
+    const contentDiv = $(`#content-${index}`);
+    const expandBtn = $(event.target).closest('.expand-btn');
+    const icon = expandBtn.find('i');
+    
+    if (contentDiv.is(':visible')) {
+        // Collapse
+        contentDiv.slideUp(300);
+        icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        expandBtn.attr('title', 'Expand content');
+    } else {
+        // Expand
+        contentDiv.slideDown(300);
+        icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        expandBtn.attr('title', 'Collapse content');
+        
+        // Load content if not already loaded
+        if (contentDiv.find('.content-loading').length > 0) {
+            displayInlineContent(index);
+        }
+    }
+}
+
+// Display inline content from search results (no AJAX needed)
+function displayInlineContent(index) {
+    const contentDiv = $(`#content-${index}`);
+    const result = currentResults[index];
+    
+    if (!result || !result.html_content) {
+        contentDiv.html(`
+            <div class="alert alert-warning m-3">
+                <i class="fas fa-exclamation-triangle"></i> 
+                Content not available for this file.
+            </div>
+        `);
+        return;
+    }
+    
+    const contentHtml = `
+        <div class="result-content-inner">
+            <div class="content-controls">
+                <button class="btn btn-sm btn-outline-secondary me-2" onclick="toggleContentView(${index})" id="viewToggle-${index}">
+                    <i class="fas fa-code"></i> Raw
+                </button>
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="copyResultContent(${index})">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            <div class="content-display">
+                <div class="content-rendered" id="rendered-${index}">
+                    ${result.html_content}
+                </div>
+                <div class="content-raw" id="raw-${index}" style="display: none;">
+                    <pre><code>${escapeHtml(result.raw_content)}</code></pre>
+                </div>
+            </div>
+        </div>
+    `;
+    contentDiv.html(contentHtml);
+    
+    // Store the data for copy functionality
+    contentDiv.data('fileData', {
+        raw_content: result.raw_content,
+        html_content: result.html_content,
+        file_path: result.path,
+        title: result.title
+    });
+}
+
+// Toggle between rendered and raw view for result content
+function toggleContentView(index) {
+    const renderedDiv = $(`#rendered-${index}`);
+    const rawDiv = $(`#raw-${index}`);
+    const toggleBtn = $(`#viewToggle-${index}`);
+    
+    if (renderedDiv.is(':visible')) {
+        renderedDiv.hide();
+        rawDiv.show();
+        toggleBtn.html('<i class="fas fa-eye"></i> Rendered');
+    } else {
+        rawDiv.hide();
+        renderedDiv.show();
+        toggleBtn.html('<i class="fas fa-code"></i> Raw');
+    }
+}
+
+// Copy result content to clipboard
+function copyResultContent(index) {
+    const contentDiv = $(`#content-${index}`);
+    const fileData = contentDiv.data('fileData');
+    
+    if (fileData && fileData.raw_content) {
+        navigator.clipboard.writeText(fileData.raw_content).then(function() {
+            // Show success feedback
+            const copyBtn = $(`#content-${index} .content-controls .btn:contains('Copy')`);
+            const originalHtml = copyBtn.html();
+            copyBtn.html('<i class="fas fa-check text-success"></i> Copied!');
+            setTimeout(() => {
+                copyBtn.html(originalHtml);
+            }, 2000);
+        }).catch(function() {
+            alert('Failed to copy content to clipboard');
+        });
+    }
+}
+
 // Event listeners
 $(document).ready(function() {
     // Search button click
@@ -1273,6 +1397,7 @@ function initFileViewer() {
     });
 }
 
+// TODO: Extract shared file loading logic to eliminate duplication with loadResultContent()
 function openFileViewer(filePath) {
     // Show modal with loading state
     $('#fileViewerModal').modal('show');

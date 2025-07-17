@@ -565,6 +565,169 @@
             background: rgba(77, 171, 247, 0.05);
         }
 
+        /* Expandable result content styles */
+        .result-header {
+            cursor: pointer;
+        }
+
+        .result-path {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .path-text {
+            flex: 1;
+            margin-right: 0.5rem;
+        }
+
+        .expand-btn {
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .expand-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .result-content {
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .result-content-inner {
+            padding: 1rem;
+        }
+
+        .content-controls {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content-display {
+            max-height: 60vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-primary);
+        }
+
+        .content-rendered {
+            padding: 1.5rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .content-raw {
+            padding: 0;
+        }
+
+        .content-raw pre {
+            margin: 0;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: none;
+            border-radius: 0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .content-raw code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
+
+        .content-loading {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        /* Markdown content styling in results */
+        .content-rendered h1,
+        .content-rendered h2,
+        .content-rendered h3,
+        .content-rendered h4,
+        .content-rendered h5,
+        .content-rendered h6 {
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-rendered h1 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .content-rendered h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+        }
+
+        .content-rendered code {
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: var(--text-primary);
+        }
+
+        .content-rendered pre {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .content-rendered pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .content-rendered blockquote {
+            border-left: 4px solid var(--accent-primary);
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .content-rendered table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        .content-rendered th,
+        .content-rendered td {
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .content-rendered th {
+            background: var(--bg-tertiary);
+            font-weight: bold;
+        }
+
+        .content-rendered a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .content-rendered a:hover {
+            text-decoration: underline;
+        }
+
         .jef-section .card {
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
