@@ -30,12 +30,52 @@ else:
 app = Flask(__name__)
 
 class ChatSearchEngine:
-    def __init__(self, base_path):
+    """
+    Main search engine for ChatGPT conversation archives.
+    
+    Handles file discovery, metadata extraction, content searching,
+    and result ranking for markdown files in the archive directory.
+    
+    Attributes:
+        base_path (Path): Root directory containing ChatGPT archive files
+    """
+    
+    def __init__(self, base_path: str):
+        """
+        Initialize the search engine with the archive base path.
+        
+        Args:
+            base_path: Path to the root directory containing ChatGPT archive files
+            
+        Raises:
+            FileNotFoundError: If the base path doesn't exist
+        """
         self.base_path = Path(base_path)
         print(f"Initializing search engine with path: {self.base_path}")
         
-    def extract_metadata(self, file_path):
-        """Extract YAML frontmatter and basic file info"""
+    def extract_metadata(self, file_path: Path) -> dict:
+        """
+        Extract YAML frontmatter and basic file information from a markdown file.
+        
+        Parses YAML frontmatter to extract conversation metadata like title,
+        conversation ID, timestamps, etc. Also extracts basic file stats.
+        
+        Args:
+            file_path: Path to the markdown file to process
+            
+        Returns:
+            Dictionary containing extracted metadata:
+            - title: Conversation title from YAML or filename
+            - conversation_id: Unique conversation identifier
+            - create_time: Creation timestamp
+            - update_time: Last update timestamp
+            - file_size: File size in bytes
+            - modified_date: File modification date
+            
+        Raises:
+            FileNotFoundError: If the file doesn't exist
+            UnicodeDecodeError: If the file can't be decoded as UTF-8
+        """
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -85,8 +125,28 @@ class ChatSearchEngine:
                 'modified_date': datetime.now()
             }
     
-    def search_in_content(self, content, search_terms, mode='ALL', case_sensitive=False):
-        """Search for terms in content"""
+    def search_in_content(self, content: str, search_terms: str, mode: str = 'ALL', case_sensitive: bool = False) -> int:
+        """
+        Search for terms within text content using boolean logic.
+        
+        Supports both ALL (AND) and ANY (OR) search modes with optional
+        case sensitivity. Handles quoted phrases as exact matches.
+        
+        Args:
+            content: Text content to search within
+            search_terms: Space-separated search terms (use quotes for phrases)
+            mode: Search mode - "ALL" for AND logic, "ANY" for OR logic
+            case_sensitive: Whether to perform case-sensitive matching
+            
+        Returns:
+            Number of matching terms found (for ranking purposes)
+            
+        Example:
+            >>> engine.search_in_content("Hello world", "hello world", "ALL", False)
+            2
+            >>> engine.search_in_content("Hello world", '"hello world"', "ALL", False)
+            1
+        """
         if not search_terms.strip():
             return False, []
         
@@ -136,8 +196,36 @@ class ChatSearchEngine:
         else:  # ANY
             return len(found_terms) > 0, matches
     
-    def search(self, query_data):
-        """Main search function"""
+    def search(self, query_data: dict) -> dict:
+        """
+        Main search function that processes search queries and returns ranked results.
+        
+        Searches through all markdown files in the archive directory based on
+        the provided query parameters. Supports folder filtering, date ranges,
+        and various search modes.
+        
+        Args:
+            query_data: Dictionary containing search parameters:
+                - terms: Search terms string
+                - mode: "ALL" or "ANY" for boolean logic
+                - exclude: Terms to exclude from results
+                - case_sensitive: Boolean for case sensitivity
+                - search_in: "all", "title", or "content"
+                - date_from/date_to: Date range filters
+                - included_folders/excluded_folders: Folder filters
+                
+        Returns:
+            Dictionary containing:
+            - results: List of matching files with metadata
+            - total: Total number of results
+            - search_time: Time taken for search
+            
+        Example:
+            >>> query = {"terms": "python code", "mode": "ALL"}
+            >>> results = engine.search(query)
+            >>> len(results['results'])
+            15
+        """
         search_terms = query_data.get('terms', '').strip()
         exclude_terms = query_data.get('exclude', '').strip()
         mode = query_data.get('mode', 'ALL')
@@ -252,12 +340,61 @@ search_engine = ChatSearchEngine("ChatGPT chats/ChatGPT chats")
 
 @app.route('/')
 def index():
-    """Main search interface"""
+    """
+    Render the main search interface.
+    
+    Returns the primary web interface with search form, file explorer,
+    and result display areas. Includes all necessary JavaScript and CSS
+    for interactive functionality.
+    
+    Returns:
+        Rendered HTML template for the main application interface
+    """
     return render_template('index.html')
 
 @app.route('/search', methods=['POST'])
 def search():
-    """AJAX search endpoint"""
+    """
+    AJAX endpoint for processing search requests.
+    
+    Accepts JSON payload with search parameters and returns matching
+    files with metadata. Supports advanced filtering, boolean logic,
+    and folder-based restrictions.
+    
+    Request JSON:
+        {
+            "terms": "search terms",
+            "mode": "ALL|ANY", 
+            "exclude": "excluded terms",
+            "case_sensitive": boolean,
+            "search_in": "all|title|content",
+            "date_from": "YYYY-MM-DD",
+            "date_to": "YYYY-MM-DD",
+            "included_folders": ["folder1", "folder2"],
+            "excluded_folders": ["folder3"]
+        }
+    
+    Returns:
+        JSON response with search results:
+        {
+            "results": [
+                {
+                    "title": "Conversation Title",
+                    "path": "relative/path/to/file.md",
+                    "matches": 5,
+                    "file_size": 1024,
+                    "modified_date": "2024-01-01",
+                    "snippet": "...highlighted content..."
+                }
+            ],
+            "total": 42,
+            "search_time": "0.123s"
+        }
+    
+    Raises:
+        400: If request data is invalid
+        500: If search processing fails
+    """
     try:
         query_data = request.get_json()
         results = search_engine.search(query_data)
@@ -277,7 +414,35 @@ def search():
 
 @app.route('/api/file-tree')
 def get_file_tree():
-    """Get file tree structure for sidebar"""
+    """
+    Generate hierarchical file tree structure for the sidebar explorer.
+    
+    Recursively scans the archive directory to build a nested tree
+    structure showing folders and markdown files. Limits depth to
+    prevent performance issues with very deep directory structures.
+    
+    Returns:
+        JSON tree structure:
+        {
+            "folder_name": {
+                "type": "folder",
+                "name": "folder_name", 
+                "children": {
+                    "subfolder": {...},
+                    "file.md": {
+                        "type": "file",
+                        "name": "file.md"
+                    }
+                }
+            }
+        }
+    
+    Note:
+        - Hidden files/folders (starting with .) are excluded
+        - Only .md files are included in the tree
+        - Maximum depth is limited to 3 levels by default
+        - Inaccessible directories are silently skipped
+    """
     try:
         def build_tree(path, max_depth=3, current_depth=0):
             tree = {}

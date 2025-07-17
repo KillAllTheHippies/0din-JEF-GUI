@@ -762,46 +762,6 @@
             border-color: var(--danger);
         }
 
-        #jefResults .alert {
-            border-radius: 10px;
-            border: none;
-            margin-bottom: 1rem;
-        }
-
-        #jefResults .alert-success {
-            background: rgba(81, 207, 102, 0.1);
-            color: var(--success);
-            border-left: 4px solid var(--success);
-        }
-
-        #jefResults .alert-danger {
-            background: rgba(255, 107, 107, 0.1);
-            color: var(--danger);
-            border-left: 4px solid var(--danger);
-        }
-
-        #jefResults .alert-info {
-            background: rgba(77, 171, 247, 0.1);
-            color: var(--accent-primary);
-            border-left: 4px solid var(--accent-primary);
-        }
-
-        #jefResults .card {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-
-        #jefResults .card-header {
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-
-        #jefResults .card-body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-        }
 
         /* JEF Score Color Coding */
         .jef-score-perfect {
@@ -876,6 +836,159 @@
             width: 12px;
             height: 12px;
             border-radius: 2px;
+        }
+
+        /* JEF Sorting Controls */
+        .jef-sorting-controls .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .jef-sorting-controls .card-header {
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+        }
+
+        .jef-sorting-controls .card-header h6 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .jef-sorting-controls .form-control, 
+        .jef-sorting-controls .form-select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            min-width: 120px;
+        }
+
+        .jef-sorting-controls .form-control:focus, 
+        .jef-sorting-controls .form-select:focus {
+            background: var(--bg-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 0.2rem rgba(77, 171, 247, 0.25);
+        }
+
+        /* JEF Score Integration in Search Results */
+        .jef-score-container {
+            margin-left: 1rem;
+        }
+
+        .jef-score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .jef-score-badge:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .jef-score-badge.jef-score-perfect {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #b8860b;
+            border-color: #ffd700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+        }
+
+        .jef-score-badge.jef-score-excellent {
+            background: #22c55e;
+            color: white;
+            border-color: #16a34a;
+        }
+
+        .jef-score-badge.jef-score-good {
+            background: #fbbf24;
+            color: white;
+            border-color: #d97706;
+        }
+
+        .jef-score-badge.jef-score-moderate {
+            background: #f97316;
+            color: white;
+            border-color: #ea580c;
+        }
+
+        .jef-score-badge.jef-score-poor {
+            background: #ef4444;
+            color: white;
+            border-color: #dc2626;
+        }
+
+        .jef-details {
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .jef-details-content {
+            padding: 1rem;
+        }
+
+        .jef-details-loading {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 1rem;
+        }
+
+        .jef-analysis-result {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .jef-analysis-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .jef-test-type {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .jef-score-display {
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        .jef-analysis-details {
+            margin-top: 0.8rem;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .jef-matches, .jef-missing {
+            margin-top: 0.5rem;
+        }
+
+        .jef-matches strong, .jef-missing strong {
+            color: var(--text-primary);
+        }
+
+        .jef-tag {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            margin: 0.1rem;
+            font-size: 0.8em;
         }
         
         .search-stats {

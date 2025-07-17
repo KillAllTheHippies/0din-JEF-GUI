@@ -287,13 +287,104 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Flask**: For the lightweight web framework
 - **PyYAML**: For YAML frontmatter parsing
 
+## 🏗️ Architecture
+
+### System Components
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Flask Backend  │    │   JEF Framework │
+│   (JavaScript)  │◄──►│   (Python)       │◄──►│   (Analysis)    │
+│   Bootstrap UI  │    │   Search Engine  │    │   Security Eval │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Core Classes
+- **`ChatSearchEngine`**: Main search logic and file processing
+- **`SimpleChatSearch`**: Command-line interface for testing
+- **JEF Integration**: Security analysis framework integration
+
+## 🔧 API Documentation
+
+### Search Endpoints
+
+#### `POST /search`
+Performs search across ChatGPT archive files.
+
+**Request Body:**
+```json
+{
+  "terms": "search terms",
+  "mode": "ALL|ANY",
+  "exclude": "excluded terms",
+  "case_sensitive": false,
+  "search_in": "all|title|content",
+  "date_from": "YYYY-MM-DD",
+  "date_to": "YYYY-MM-DD",
+  "included_folders": [],
+  "excluded_folders": []
+}
+```
+
+#### `GET /file-tree`
+Returns hierarchical file structure for navigation.
+
+#### `GET /file-content/<path:file_path>`
+Returns file content with metadata for viewing.
+
+### JEF Integration Endpoints
+
+#### `GET /jef/status`
+Check JEF framework availability.
+
+#### `POST /jef/analyze`
+Run JEF analysis on file content.
+
+## 🛡️ Security Considerations
+
+### Data Privacy
+- All processing happens locally - no data sent to external servers
+- ChatGPT archive files remain on your local machine
+- JEF analysis runs locally without network access
+
+### File Access Security
+- Path traversal protection prevents access outside archive directory
+- Only `.md` files are processed for security
+- Input validation prevents injection attacks
+
+## 🧪 Testing
+
+### Running Tests
+```bash
+# Test basic search functionality
+python test_search_simple.py
+
+# Test JEF integration
+python test_jef_integration.py
+
+# Debug file tree generation
+python debug_tree.py
+```
+
 ## 📞 Support
 
 For issues, questions, or feature requests:
-1. Check the troubleshooting section
-2. Search existing issues
-3. Create a new issue with detailed information
-4. Include your Python version, browser, and error messages
+- **GitHub Issues**: Create an issue with detailed information
+- **Documentation**: See `INSTALLATION.md` for setup details
+- **JEF Integration**: See `JEF_INTEGRATION_DEVELOPER_SUMMARY.md`
+- **Contributing**: See `CONTRIBUTING.md` for development guidelines
+
+## 📚 Additional Documentation
+
+- [`INSTALLATION.md`](INSTALLATION.md) - Detailed installation guide
+- [`JEF_INTEGRATION_DEVELOPER_SUMMARY.md`](JEF_INTEGRATION_DEVELOPER_SUMMARY.md) - JEF integration overview
+- [`JEF_INTEGRATION_ADVANCED.md`](JEF_INTEGRATION_ADVANCED.md) - Advanced JEF features
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) - Contribution guidelines
+- [`CHANGELOG.md`](CHANGELOG.md) - Version history and changes
+- [`DEPLOYMENT.md`](DEPLOYMENT.md) - Deployment options and configurations
+- [`SECURITY.md`](SECURITY.md) - Security policy and best practices
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) - System architecture and design
+- [`API.md`](API.md) - Complete API documentation
+- [`run_instructions.md`](run_instructions.md) - Quick start guide
 
 ---
 

@@ -161,6 +161,66 @@
                 </button>
             </div>
 
+            <!-- JEF Results Sorting Controls -->
+            <div class="jef-sorting-controls" id="jefSortingControls" style="display: none;">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6><i class="fas fa-sort"></i> Sort & Filter Results by JEF Scores</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="jef-filter-controls">
+                            <label for="jefSortBy" class="form-label mb-0">Sort by:</label>
+                            <select id="jefSortBy" class="form-select" onchange="sortSearchResultsByJef()">
+                                <option value="original">Original Order</option>
+                                <option value="score-desc">JEF Score (High to Low)</option>
+                                <option value="score-asc">JEF Score (Low to High)</option>
+                                <option value="percentage-desc">JEF Percentage (High to Low)</option>
+                                <option value="percentage-asc">JEF Percentage (Low to High)</option>
+                                <option value="title">Title (A-Z)</option>
+                                <option value="matches">Search Matches (High to Low)</option>
+                            </select>
+                            
+                            <label for="jefFilterScore" class="form-label mb-0">Min Score:</label>
+                            <input type="number" id="jefFilterScore" class="form-control" 
+                                   placeholder="0.0" step="0.01" min="0" max="1" 
+                                   onchange="filterSearchResultsByJef()">
+                            
+                            <label for="jefFilterPercentage" class="form-label mb-0">Min %:</label>
+                            <input type="number" id="jefFilterPercentage" class="form-control" 
+                                   placeholder="0" step="1" min="0" max="100" 
+                                   onchange="filterSearchResultsByJef()">
+                            
+                            <button class="btn btn-outline-secondary btn-sm" onclick="clearJefFilters()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                        
+                        <div class="jef-score-legend mt-2">
+                            <div class="jef-score-legend-item">
+                                <div class="jef-score-legend-color" style="background: linear-gradient(135deg, #ffd700, #ffed4e);"></div>
+                                <span>Perfect (100%)</span>
+                            </div>
+                            <div class="jef-score-legend-item">
+                                <div class="jef-score-legend-color" style="background: #22c55e;"></div>
+                                <span>Excellent (70-99%)</span>
+                            </div>
+                            <div class="jef-score-legend-item">
+                                <div class="jef-score-legend-color" style="background: #fbbf24;"></div>
+                                <span>Good (50-69%)</span>
+                            </div>
+                            <div class="jef-score-legend-item">
+                                <div class="jef-score-legend-color" style="background: #f97316;"></div>
+                                <span>Moderate (30-49%)</span>
+                            </div>
+                            <div class="jef-score-legend-item">
+                                <div class="jef-score-legend-color" style="background: #ef4444;"></div>
+                                <span>Poor (&lt;30%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- JEF Analysis Section -->
             <div class="jef-section" id="jefSection" style="display: none;">
                 <div class="card mt-3">
@@ -204,70 +264,6 @@
                 </div>
             </div>
 
-            <!-- JEF Results -->
-            <div id="jefResults" style="display: none;">
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h5><i class="fas fa-chart-bar"></i> JEF Analysis Results</h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- JEF Results Controls -->
-                        <div class="jef-controls-section" id="jefResultsControls" style="display: none;">
-                            <div class="jef-filter-controls">
-                                <label for="jefSortBy" class="form-label mb-0">Sort by:</label>
-                                <select id="jefSortBy" class="form-select" onchange="sortJefResults()">
-                                    <option value="score-desc">Score (High to Low)</option>
-                                    <option value="score-asc">Score (Low to High)</option>
-                                    <option value="percentage-desc">Percentage (High to Low)</option>
-                                    <option value="percentage-asc">Percentage (Low to High)</option>
-                                    <option value="title">Title (A-Z)</option>
-                                    <option value="path">Path (A-Z)</option>
-                                </select>
-                                
-                                <label for="jefFilterScore" class="form-label mb-0">Min Score:</label>
-                                <input type="number" id="jefFilterScore" class="form-control" 
-                                       placeholder="0.0" step="0.01" min="0" max="1" 
-                                       onchange="filterJefResults()">
-                                
-                                <label for="jefFilterPercentage" class="form-label mb-0">Min %:</label>
-                                <input type="number" id="jefFilterPercentage" class="form-control" 
-                                       placeholder="0" step="1" min="0" max="100" 
-                                       onchange="filterJefResults()">
-                                
-                                <button class="btn btn-outline-secondary btn-sm" onclick="clearJefFilters()">
-                                    <i class="fas fa-times"></i> Clear
-                                </button>
-                            </div>
-                            
-                            <div class="jef-score-legend">
-                                <div class="jef-score-legend-item">
-                                    <div class="jef-score-legend-color" style="background: linear-gradient(135deg, #ffd700, #ffed4e);"></div>
-                                    <span>Perfect (100%)</span>
-                                </div>
-                                <div class="jef-score-legend-item">
-                                    <div class="jef-score-legend-color" style="background: #22c55e;"></div>
-                                    <span>Excellent (70-99%)</span>
-                                </div>
-                                <div class="jef-score-legend-item">
-                                    <div class="jef-score-legend-color" style="background: #fbbf24;"></div>
-                                    <span>Good (50-69%)</span>
-                                </div>
-                                <div class="jef-score-legend-item">
-                                    <div class="jef-score-legend-color" style="background: #f97316;"></div>
-                                    <span>Moderate (30-49%)</span>
-                                </div>
-                                <div class="jef-score-legend-item">
-                                    <div class="jef-score-legend-color" style="background: #ef4444;"></div>
-                                    <span>Poor (&lt;30%)</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="jefResultsContent">
-                        </div>
-                    </div>
-                </div>
-            </div>
             
             <!-- Results Container -->
             <div class="results-container">
@@ -343,8 +339,9 @@ let currentContextItem = null;
 let jefAvailable = false;
 let jefTests = [];
 let selectedFile = null;
-let jefResultsData = [];
 let currentJefTestType = '';
+let originalResultsOrder = [];
+let jefResultsData = {}; // Store JEF results by file path
 
 // Debounce function to limit search frequency
 function debounce(func, wait) {
@@ -389,6 +386,9 @@ function performSearch() {
     $('#searchStats').hide();
     $('#exportButtons').hide();
     
+    // Hide JEF scores from previous searches (true = clear all data)
+    hideAllJefScores(true);
+    
     searchStartTime = Date.now();
     
     // Perform AJAX search
@@ -402,6 +402,8 @@ function performSearch() {
             
             if (response.success) {
                 currentResults = response.results;
+                originalResultsOrder = [...response.results]; // Store original order
+                jefResultsData = {}; // Clear previous JEF data
                 displayResults(response.results);
                 
                 // Show search stats
@@ -436,6 +438,11 @@ function displayResults(results) {
     const container = $('#searchResults');
     container.empty();
     
+    // Only hide JEF scores if this is a new search (not a re-render from sorting/filtering)
+    if (arguments[1] !== 'rerender') {
+        hideAllJefScores();
+    }
+    
     if (results.length === 0) {
         $('#noResults').show();
         return;
@@ -457,6 +464,21 @@ function displayResults(results) {
                         <span class="ms-3">Modified: ${result.modified_date}</span>
                         <span class="ms-3">Size: ${formatFileSize(result.file_size)}</span>
                         ${result.create_time ? `<span class="ms-3">Created: ${result.create_time}</span>` : ''}
+                        <div class="jef-score-container" id="jef-score-${index}" style="display: none;">
+                            <span class="jef-score-badge" onclick="toggleJefDetails(event, ${index})" title="Click to expand JEF analysis details">
+                                <i class="fas fa-shield-alt"></i> JEF: <span class="jef-score-value">--</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="jef-details" id="jef-details-${index}" style="display: none;">
+                    <div class="jef-details-content">
+                        <div class="jef-details-loading">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="ms-2">Loading JEF analysis...</span>
+                        </div>
                     </div>
                 </div>
                 <div class="result-content" id="content-${index}" style="display: none;">
@@ -953,8 +975,8 @@ function runSingleJefAnalysis(filePath, testType, referenceText) {
         reference_text: referenceText
     };
     
-    $('#jefResultsContent').html('<div class="text-center"><div class="spinner-border" role="status"></div><p class="mt-2">Running JEF analysis...</p></div>');
-    $('#jefResults').show();
+    // Show analysis status in the JEF section
+    $('#jefStatus').html('<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Running JEF analysis...</span>');
     
     $.ajax({
         url: '/api/jef-analyze',
@@ -962,11 +984,24 @@ function runSingleJefAnalysis(filePath, testType, referenceText) {
         contentType: 'application/json',
         data: JSON.stringify(data),
         success: function(response) {
-            displayJefResults([response], 'single');
+            // Update the search result container if this file is in current results
+            const resultIndex = currentResults.findIndex(r => r.path === filePath);
+            if (resultIndex !== -1) {
+                updateJefScoreInResult(resultIndex, response, testType);
+                $('#jefStatus').html('<span class="text-success"><i class="fas fa-check-circle"></i> Analysis complete - check search results</span>');
+            } else {
+                $('#jefStatus').html('<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Analysis complete but file not in current results</span>');
+            }
         },
         error: function(xhr) {
             const error = xhr.responseJSON ? xhr.responseJSON.error : 'Analysis failed';
-            $('#jefResultsContent').html(`<div class="alert alert-danger">Error: ${error}</div>`);
+            $('#jefStatus').html(`<span class="text-danger"><i class="fas fa-times-circle"></i> Analysis failed: ${error}</span>`);
+            
+            // Update the search result container with error state
+            const resultIndex = currentResults.findIndex(r => r.path === filePath);
+            if (resultIndex !== -1) {
+                updateJefScoreInResult(resultIndex, {success: false, error: error}, testType);
+            }
         }
     });
 }
@@ -979,8 +1014,8 @@ function runBatchJefAnalysis(testType, referenceText) {
         reference_text: referenceText
     };
     
-    $('#jefResultsContent').html(`<div class="text-center"><div class="spinner-border" role="status"></div><p class="mt-2">Running JEF analysis on ${filePaths.length} files...</p></div>`);
-    $('#jefResults').show();
+    // Show analysis status in the JEF section
+    $('#jefStatus').html(`<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Running JEF analysis on ${filePaths.length} files...</span>`);
     
     $.ajax({
         url: '/api/jef-batch-analyze',
@@ -988,11 +1023,27 @@ function runBatchJefAnalysis(testType, referenceText) {
         contentType: 'application/json',
         data: JSON.stringify(data),
         success: function(response) {
-            displayJefResults(response.results, 'batch', response);
+            // Update search result containers with JEF scores
+            let successCount = 0;
+            if (response.results && Array.isArray(response.results)) {
+                response.results.forEach(jefResult => {
+                    const resultIndex = currentResults.findIndex(r => r.path === jefResult.file_path);
+                    if (resultIndex !== -1) {
+                        updateJefScoreInResult(resultIndex, jefResult, testType);
+                        if (jefResult.success) successCount++;
+                    }
+                });
+            }
+            $('#jefStatus').html(`<span class="text-success"><i class="fas fa-check-circle"></i> Batch analysis complete - ${successCount}/${response.results.length} files analyzed successfully</span>`);
         },
         error: function(xhr) {
             const error = xhr.responseJSON ? xhr.responseJSON.error : 'Batch analysis failed';
-            $('#jefResultsContent').html(`<div class="alert alert-danger">Error: ${error}</div>`);
+            $('#jefStatus').html(`<span class="text-danger"><i class="fas fa-times-circle"></i> Batch analysis failed: ${error}</span>`);
+            
+            // Update all search result containers with error state
+            currentResults.forEach((result, index) => {
+                updateJefScoreInResult(index, {success: false, error: error}, testType);
+            });
         }
     });
 }
@@ -1025,206 +1076,7 @@ function getScoreColorClass(result, testType) {
     }
 }
 
-function displayJefResults(results, mode, batchInfo = null) {
-    // Store results data for sorting/filtering
-    if (Array.isArray(results)) {
-        jefResultsData = results.map(r => ({...r, mode, testType: currentJefTestType}));
-    } else {
-        jefResultsData = [{...results, mode, testType: currentJefTestType}];
-    }
-    
-    // Show controls for batch results
-    if (mode === 'batch' && Array.isArray(results) && results.length > 1) {
-        $('#jefResultsControls').show();
-    } else {
-        $('#jefResultsControls').hide();
-    }
-    
-    renderJefResults(jefResultsData, batchInfo);
-}
-
-function renderJefResults(results, batchInfo = null) {
-    let html = '';
-    
-    if (batchInfo) {
-        html += `
-            <div class="alert alert-info">
-                <h6>Batch Analysis Summary</h6>
-                <p>Total files: ${batchInfo.total_files} | Successful analyses: ${batchInfo.successful_analyses}</p>
-            </div>
-        `;
-    }
-    
-    function formatJefScore(result) {
-        if (typeof result === 'number') {
-            return result.toFixed(4);
-        } else if (result && typeof result === 'object') {
-            // Handle JEF ScoreType object based on types.py structure
-            let output = '';
-            
-            if (result.score !== undefined) {
-                output += `Score: ${typeof result.score === 'number' ? result.score.toFixed(4) : result.score}`;
-            }
-            
-            if (result.percentage !== undefined) {
-                if (output) output += ' | ';
-                output += `Percentage: ${typeof result.percentage === 'number' ? result.percentage.toFixed(2) : result.percentage}%`;
-            }
-            
-            
-            // For copyright analysis, show additional details
-            if (result.ngram_scores !== undefined) {
-                if (output) output += '<br>';
-                output += `N-gram Score: ${typeof result.ngram_scores === 'number' ? result.ngram_scores.toFixed(4) : result.ngram_scores}`;
-            }
-            
-            if (result.sentence_scores !== undefined) {
-                if (output) output += ' | ';
-                output += `Sentence Score: ${typeof result.sentence_scores === 'number' ? result.sentence_scores.toFixed(4) : result.sentence_scores}`;
-            }
-            
-            // Show matches if available
-            if (result.matches && Array.isArray(result.matches) && result.matches.length > 0) {
-                if (output) output += '<br>';
-                output += `<small>Matches: ${result.matches.slice(0, 3).join(', ')}${result.matches.length > 3 ? '...' : ''}</small>`;
-            }
-            
-            // Show missing if available
-            if (result.missing && Array.isArray(result.missing) && result.missing.length > 0) {
-                if (output) output += '<br>';
-                output += `<small>Missing: ${result.missing.slice(0, 3).join(', ')}${result.missing.length > 3 ? '...' : ''}</small>`;
-            }
-            
-            return output || JSON.stringify(result);
-        } else {
-            return String(result);
-        }
-    }
-    
-    if (Array.isArray(results)) {
-        results.forEach(function(result, index) {
-            const success = result.success;
-            const baseAlertClass = success ? 'alert-success' : 'alert-danger';
-            const colorClass = success ? getScoreColorClass(result.result, result.testType || currentJefTestType) : '';
-            const alertClass = success ? colorClass : baseAlertClass;
-            const icon = success ? 'fa-check-circle' : 'fa-times-circle';
-            
-            html += `
-                <div class="alert ${alertClass}" data-score="${success && result.result?.score ? result.result.score : 0}" 
-                     data-percentage="${success && result.result?.percentage ? result.result.percentage : 0}">
-                    <h6><i class="fas ${icon}"></i> ${result.mode === 'single' ? result.file_info?.title || result.file_path : result.title || result.file_path}</h6>
-                    ${result.mode === 'batch' ? `<p class="mb-1"><small>Path: ${result.file_path}</small></p>` : ''}
-                    ${success ? 
-                        `<div><strong>JEF Analysis:</strong><br>${formatJefScore(result.result)}</div>` :
-                        `<p><strong>Error:</strong> ${result.error}</p>`
-                    }
-                    ${success && result.content_length ? `<p><small>Content length: ${result.content_length} characters</small></p>` : ''}
-                </div>
-            `;
-        });
-    } else {
-        // Single result
-        const success = results.success;
-        const baseAlertClass = success ? 'alert-success' : 'alert-danger';
-        const colorClass = success ? getScoreColorClass(results.result, results.testType || currentJefTestType) : '';
-        const alertClass = success ? colorClass : baseAlertClass;
-        const icon = success ? 'fa-check-circle' : 'fa-times-circle';
-        
-        html = `
-            <div class="alert ${alertClass}" data-score="${success && results.result?.score ? results.result.score : 0}" 
-                 data-percentage="${success && results.result?.percentage ? results.result.percentage : 0}">
-                <h6><i class="fas ${icon}"></i> ${results.file_info?.title || 'Analysis Result'}</h6>
-                <p><small>Path: ${results.file_info?.path}</small></p>
-                ${success ? 
-                    `<div><strong>JEF Analysis:</strong><br>${formatJefScore(results.result)}</div>` :
-                    `<p><strong>Error:</strong> ${results.error}</p>`
-                }
-                ${success && results.file_info?.content_length ? `<p><small>Content length: ${results.file_info.content_length} characters</small></p>` : ''}
-            </div>
-        `;
-    }
-    
-    $('#jefResultsContent').html(html);
-}
-
-// JEF Results Sorting and Filtering
-function sortJefResults() {
-    const sortBy = $('#jefSortBy').val();
-    const sortedResults = [...jefResultsData];
-    
-    sortedResults.sort((a, b) => {
-        switch (sortBy) {
-            case 'score-desc':
-                return (b.result?.score || 0) - (a.result?.score || 0);
-            case 'score-asc':
-                return (a.result?.score || 0) - (b.result?.score || 0);
-            case 'percentage-desc':
-                return (b.result?.percentage || 0) - (a.result?.percentage || 0);
-            case 'percentage-asc':
-                return (a.result?.percentage || 0) - (b.result?.percentage || 0);
-            case 'title':
-                return (a.title || a.file_path || '').localeCompare(b.title || b.file_path || '');
-            case 'path':
-                return (a.file_path || '').localeCompare(b.file_path || '');
-            default:
-                return 0;
-        }
-    });
-    
-    renderJefResults(applyJefFilters(sortedResults));
-}
-
-function filterJefResults() {
-    const sortedResults = getSortedJefResults();
-    renderJefResults(applyJefFilters(sortedResults));
-}
-
-function getSortedJefResults() {
-    const sortBy = $('#jefSortBy').val();
-    const sortedResults = [...jefResultsData];
-    
-    sortedResults.sort((a, b) => {
-        switch (sortBy) {
-            case 'score-desc':
-                return (b.result?.score || 0) - (a.result?.score || 0);
-            case 'score-asc':
-                return (a.result?.score || 0) - (b.result?.score || 0);
-            case 'percentage-desc':
-                return (b.result?.percentage || 0) - (a.result?.percentage || 0);
-            case 'percentage-asc':
-                return (a.result?.percentage || 0) - (b.result?.percentage || 0);
-            case 'title':
-                return (a.title || a.file_path || '').localeCompare(b.title || b.file_path || '');
-            case 'path':
-                return (a.file_path || '').localeCompare(b.file_path || '');
-            default:
-                return 0;
-        }
-    });
-    
-    return sortedResults;
-}
-
-function applyJefFilters(results) {
-    const minScore = parseFloat($('#jefFilterScore').val()) || 0;
-    const minPercentage = parseFloat($('#jefFilterPercentage').val()) || 0;
-    
-    return results.filter(result => {
-        if (!result.success) return true; // Always show errors
-        
-        const score = result.result?.score || 0;
-        const percentage = result.result?.percentage || 0;
-        
-        return score >= minScore && percentage >= minPercentage;
-    });
-}
-
-function clearJefFilters() {
-    $('#jefFilterScore').val('');
-    $('#jefFilterPercentage').val('');
-    $('#jefSortBy').val('score-desc');
-    renderJefResults(jefResultsData);
-}
+// Note: Old JEF results functions removed - results now display directly in search containers
 
 // Toggle result content expansion
 // Uses lazy loading - content is fetched via AJAX only when first expanded
@@ -1390,6 +1242,346 @@ function copyResultContent(index) {
         }).catch(function() {
             alert('Failed to copy content to clipboard');
         });
+    }
+}
+
+// JEF Score Integration Functions
+function toggleJefDetails(event, index) {
+    event.stopPropagation(); // Prevent triggering other click handlers
+    
+    const detailsDiv = $(`#jef-details-${index}`);
+    const badge = $(event.target).closest('.jef-score-badge');
+    
+    if (detailsDiv.is(':visible')) {
+        // Collapse
+        detailsDiv.slideUp(300);
+        badge.removeClass('expanded');
+    } else {
+        // Expand
+        detailsDiv.slideDown(300);
+        badge.addClass('expanded');
+        
+        // Load JEF details if not already loaded
+        if (detailsDiv.find('.jef-details-loading').length > 0) {
+            loadJefDetailsForResult(index);
+        }
+    }
+}
+
+function updateJefScoreInResult(index, jefResult, testType) {
+    const scoreContainer = $(`#jef-score-${index}`);
+    const scoreBadge = scoreContainer.find('.jef-score-badge');
+    const scoreValue = scoreContainer.find('.jef-score-value');
+    
+    // Store JEF data for sorting/filtering
+    const filePath = currentResults[index]?.path;
+    if (filePath) {
+        jefResultsData[filePath] = {
+            result: jefResult,
+            testType: testType,
+            index: index
+        };
+    }
+    
+    if (jefResult && jefResult.success) {
+        const result = jefResult.result;
+        const colorClass = getScoreColorClass(result, testType);
+        
+        // Update score display
+        let displayText = '';
+        if (result.percentage !== undefined) {
+            displayText = `${result.percentage.toFixed(1)}%`;
+        } else if (result.score !== undefined) {
+            displayText = `${(result.score * 100).toFixed(1)}%`;
+        } else {
+            displayText = 'N/A';
+        }
+        
+        scoreValue.text(displayText);
+        scoreBadge.removeClass('jef-score-perfect jef-score-excellent jef-score-good jef-score-moderate jef-score-poor');
+        scoreBadge.addClass(colorClass);
+        scoreContainer.show();
+        
+        // Store JEF data for details expansion
+        scoreContainer.data('jefResult', jefResult);
+        scoreContainer.data('testType', testType);
+    } else {
+        // Show error state
+        scoreValue.text('Error');
+        scoreBadge.removeClass('jef-score-perfect jef-score-excellent jef-score-good jef-score-moderate jef-score-poor');
+        scoreBadge.addClass('jef-score-poor');
+        scoreContainer.show();
+        
+        // Store error data
+        scoreContainer.data('jefResult', jefResult);
+        scoreContainer.data('testType', testType);
+    }
+    
+    // Show sorting controls if we have JEF results
+    if (Object.keys(jefResultsData).length > 0) {
+        $('#jefSortingControls').show();
+    }
+}
+
+function loadJefDetailsForResult(index) {
+    const scoreContainer = $(`#jef-score-${index}`);
+    const jefResult = scoreContainer.data('jefResult');
+    const testType = scoreContainer.data('testType');
+    const detailsContent = $(`#jef-details-${index} .jef-details-content`);
+    
+    if (!jefResult) {
+        detailsContent.html('<div class="alert alert-warning">No JEF analysis data available</div>');
+        return;
+    }
+    
+    if (jefResult.success) {
+        const result = jefResult.result;
+        const testName = jefTests.find(t => t.id === testType)?.name || testType;
+        
+        let detailsHtml = `
+            <div class="jef-analysis-result">
+                <div class="jef-analysis-header">
+                    <span class="jef-test-type">${escapeHtml(testName)}</span>
+                    <span class="jef-score-display">${formatJefScoreForDetails(result)}</span>
+                </div>
+        `;
+        
+        // Add detailed information
+        if (result.score !== undefined) {
+            detailsHtml += `<div class="jef-analysis-details">
+                <strong>Raw Score:</strong> ${typeof result.score === 'number' ? result.score.toFixed(4) : result.score}
+            </div>`;
+        }
+        
+        if (result.percentage !== undefined) {
+            detailsHtml += `<div class="jef-analysis-details">
+                <strong>Percentage:</strong> ${typeof result.percentage === 'number' ? result.percentage.toFixed(2) : result.percentage}%
+            </div>`;
+        }
+        
+        // Copyright-specific details
+        if (result.ngram_scores !== undefined) {
+            detailsHtml += `<div class="jef-analysis-details">
+                <strong>N-gram Score:</strong> ${typeof result.ngram_scores === 'number' ? result.ngram_scores.toFixed(4) : result.ngram_scores}
+            </div>`;
+        }
+        
+        if (result.sentence_scores !== undefined) {
+            detailsHtml += `<div class="jef-analysis-details">
+                <strong>Sentence Score:</strong> ${typeof result.sentence_scores === 'number' ? result.sentence_scores.toFixed(4) : result.sentence_scores}
+            </div>`;
+        }
+        
+        // Show matches
+        if (result.matches && Array.isArray(result.matches) && result.matches.length > 0) {
+            detailsHtml += `<div class="jef-matches">
+                <strong>Matches Found:</strong><br>
+                ${result.matches.map(match => `<span class="jef-tag">${escapeHtml(match)}</span>`).join('')}
+            </div>`;
+        }
+        
+        // Show missing
+        if (result.missing && Array.isArray(result.missing) && result.missing.length > 0) {
+            detailsHtml += `<div class="jef-missing">
+                <strong>Missing Elements:</strong><br>
+                ${result.missing.map(missing => `<span class="jef-tag">${escapeHtml(missing)}</span>`).join('')}
+            </div>`;
+        }
+        
+        detailsHtml += '</div>';
+        detailsContent.html(detailsHtml);
+    } else {
+        detailsContent.html(`
+            <div class="alert alert-danger">
+                <strong>Analysis Error:</strong> ${escapeHtml(jefResult.error || 'Unknown error occurred')}
+            </div>
+        `);
+    }
+}
+
+function formatJefScoreForDetails(result) {
+    if (result.percentage !== undefined) {
+        return `${result.percentage.toFixed(2)}%`;
+    } else if (result.score !== undefined) {
+        return `${(result.score * 100).toFixed(2)}%`;
+    } else {
+        return 'N/A';
+    }
+}
+
+function hideAllJefScores() {
+    $('.jef-score-container').hide();
+    $('.jef-details').hide();
+    // Only hide sorting controls if we're clearing all JEF data (new search)
+    if (arguments[0] === true) {
+        $('#jefSortingControls').hide();
+        jefResultsData = {};
+    }
+}
+
+function showJefScoresForResults() {
+    if (jefAvailable && currentResults.length > 0) {
+        // Show JEF score containers for all results
+        currentResults.forEach((result, index) => {
+            $(`#jef-score-${index}`).show();
+        });
+    }
+}
+
+// JEF Results Sorting and Filtering for Search Results
+function sortSearchResultsByJef() {
+    // Store current filter values before any operations
+    const currentMinScore = $('#jefFilterScore').val();
+    const currentMinPercentage = $('#jefFilterPercentage').val();
+    const sortBy = $('#jefSortBy').val();
+    
+    if (sortBy === 'original') {
+        // Apply any active filters to the original order
+        filterSearchResultsByJef();
+        return;
+    }
+    
+    const sortedResults = [...currentResults];
+    
+    sortedResults.sort((a, b) => {
+        const aJef = jefResultsData[a.path];
+        const bJef = jefResultsData[b.path];
+        
+        switch (sortBy) {
+            case 'score-desc':
+                const aScore = aJef?.result?.result?.score || 0;
+                const bScore = bJef?.result?.result?.score || 0;
+                return bScore - aScore;
+            case 'score-asc':
+                const aScoreAsc = aJef?.result?.result?.score || 0;
+                const bScoreAsc = bJef?.result?.result?.score || 0;
+                return aScoreAsc - bScoreAsc;
+            case 'percentage-desc':
+                const aPerc = aJef?.result?.result?.percentage || 0;
+                const bPerc = bJef?.result?.result?.percentage || 0;
+                return bPerc - aPerc;
+            case 'percentage-asc':
+                const aPercAsc = aJef?.result?.result?.percentage || 0;
+                const bPercAsc = bJef?.result?.result?.percentage || 0;
+                return aPercAsc - bPercAsc;
+            case 'title':
+                return a.title.localeCompare(b.title);
+            case 'matches':
+                return b.matches - a.matches;
+            default:
+                return 0;
+        }
+    });
+    
+    currentResults = sortedResults;
+    displayResults(currentResults, 'rerender');
+    restoreJefScores();
+    
+    // Restore filter values after re-rendering
+    $('#jefFilterScore').val(currentMinScore);
+    $('#jefFilterPercentage').val(currentMinPercentage);
+    $('#jefSortBy').val(sortBy);
+}
+
+function filterSearchResultsByJef() {
+    // Store current filter values before any operations
+    const currentMinScore = $('#jefFilterScore').val();
+    const currentMinPercentage = $('#jefFilterPercentage').val();
+    const currentSortBy = $('#jefSortBy').val();
+    
+    const minScore = parseFloat(currentMinScore) || 0;
+    const minPercentage = parseFloat(currentMinPercentage) || 0;
+    
+    let filteredResults = [...originalResultsOrder];
+    
+    if (minScore > 0 || minPercentage > 0) {
+        filteredResults = filteredResults.filter(result => {
+            const jefData = jefResultsData[result.path];
+            if (!jefData || !jefData.result?.success) return false;
+            
+            const score = jefData.result.result?.score || 0;
+            const percentage = jefData.result.result?.percentage || 0;
+            
+            return score >= minScore && percentage >= minPercentage;
+        });
+    }
+    
+    currentResults = filteredResults;
+    displayResults(currentResults, 'rerender');
+    restoreJefScores();
+    
+    // Restore filter values after re-rendering
+    $('#jefFilterScore').val(currentMinScore);
+    $('#jefFilterPercentage').val(currentMinPercentage);
+    $('#jefSortBy').val(currentSortBy);
+    
+    // Apply current sorting after filtering
+    if (currentSortBy !== 'original') {
+        sortSearchResultsByJef();
+    }
+}
+
+function clearJefFilters() {
+    $('#jefFilterScore').val('');
+    $('#jefFilterPercentage').val('');
+    $('#jefSortBy').val('original');
+    
+    currentResults = [...originalResultsOrder];
+    displayResults(currentResults, 'rerender');
+    restoreJefScores();
+}
+
+function restoreJefScores() {
+    // Restore JEF scores after re-rendering results
+    currentResults.forEach((result, newIndex) => {
+        const jefData = jefResultsData[result.path];
+        if (jefData) {
+            // Update the stored index
+            jefData.index = newIndex;
+            // Restore the score display without triggering the sorting controls show again
+            const scoreContainer = $(`#jef-score-${newIndex}`);
+            const scoreBadge = scoreContainer.find('.jef-score-badge');
+            const scoreValue = scoreContainer.find('.jef-score-value');
+            
+            if (jefData.result && jefData.result.success) {
+                const result = jefData.result.result;
+                const colorClass = getScoreColorClass(result, jefData.testType);
+                
+                // Update score display
+                let displayText = '';
+                if (result.percentage !== undefined) {
+                    displayText = `${result.percentage.toFixed(1)}%`;
+                } else if (result.score !== undefined) {
+                    displayText = `${(result.score * 100).toFixed(1)}%`;
+                } else {
+                    displayText = 'N/A';
+                }
+                
+                scoreValue.text(displayText);
+                scoreBadge.removeClass('jef-score-perfect jef-score-excellent jef-score-good jef-score-moderate jef-score-poor');
+                scoreBadge.addClass(colorClass);
+                scoreContainer.show();
+                
+                // Store JEF data for details expansion
+                scoreContainer.data('jefResult', jefData.result);
+                scoreContainer.data('testType', jefData.testType);
+            } else {
+                // Show error state
+                scoreValue.text('Error');
+                scoreBadge.removeClass('jef-score-perfect jef-score-excellent jef-score-good jef-score-moderate jef-score-poor');
+                scoreBadge.addClass('jef-score-poor');
+                scoreContainer.show();
+                
+                // Store error data
+                scoreContainer.data('jefResult', jefData.result);
+                scoreContainer.data('testType', jefData.testType);
+            }
+        }
+    });
+    
+    // Ensure sorting controls remain visible if we have JEF data
+    if (Object.keys(jefResultsData).length > 0) {
+        $('#jefSortingControls').show();
     }
 }
 
