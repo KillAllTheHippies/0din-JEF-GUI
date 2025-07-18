@@ -1,8 +1,8 @@
 {
   "archive_path": "K:/__CHATGPT_OBSIDIAN__/ChatGPT chats/ChatGPT chats",
   "theme_mode": "auto",
-  "accent_color": "purple",
-  "custom_primary_color": "#c7df16",
+  "accent_color": "custom",
+  "custom_primary_color": "#00ff2a",
   "default_search_mode": "ALL",
   "max_results": 1000,
   "default_case_sensitive": false,
@@ -22,5 +22,5 @@
   "debug": true,
   "version": "1.0",
   "created_at": "2025-07-18T01:50:55.642423",
-  "last_saved": "2025-07-18T03:25:56.362160"
+  "last_saved": "2025-07-18T05:00:37.015397"
 }

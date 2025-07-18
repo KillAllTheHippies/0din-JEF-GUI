@@ -38,9 +38,6 @@
                                     <button class="btn btn-outline-primary" type="button" onclick="validateArchivePath()">
                                         <i class="fas fa-check-circle"></i> Validate
                                     </button>
-                                    <button class="btn btn-outline-info" type="button" onclick="showPathHelp()">
-                                        <i class="fas fa-question-circle"></i> Help
-                                    </button>
                                 </div>
                                 <div class="form-text">
                                     Path to the folder containing your converted ChatGPT conversation files (.md format)
@@ -52,35 +49,79 @@
                         <!-- Theme Settings -->
                         <div class="settings-section mb-4">
                             <h6 class="section-title">
-                                <i class="fas fa-palette"></i> Appearance
+                                <i class="fas fa-palette"></i> Theme & Appearance
                             </h6>
                             <div class="row">
                                 <div class="col-md-6">
                                     <label for="themeMode" class="form-label">Theme Mode</label>
                                     <select class="form-select" id="themeMode">
-                                        <option value="auto">Auto (Follow System)</option>
-                                        <option value="light">Light Mode</option>
-                                        <option value="dark">Dark Mode</option>
+                                        <option value="auto">Auto (System)</option>
+                                        <option value="light">Light</option>
+                                        <option value="dark">Dark</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="accentColor" class="form-label">Accent Color</label>
                                     <select class="form-select" id="accentColor">
-                                        <option value="blue">Blue (Default)</option>
+                                        <option value="blue">Blue</option>
                                         <option value="purple">Purple</option>
                                         <option value="green">Green</option>
                                         <option value="orange">Orange</option>
                                         <option value="red">Red</option>
                                         <option value="teal">Teal</option>
+                                        <option value="custom">Custom</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="mt-3">
-                                <label for="customPrimaryColor" class="form-label">Custom Primary Color</label>
-                                <div class="input-group">
-                                    <input type="color" class="form-control form-control-color" id="customPrimaryColor" value="#0d6efd">
-                                    <input type="text" class="form-control" id="customPrimaryColorHex" placeholder="#0d6efd">
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="customPrimaryColor" class="form-label">Custom Primary Color</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="customPrimaryColor" value="#0d6efd">
+                                        <input type="text" class="form-control" id="customPrimaryColorHex" placeholder="#0d6efd">
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- JEF Integration Settings -->
+                        <div class="settings-section mb-4">
+                            <h6 class="section-title">
+                                <i class="fas fa-shield-alt"></i> JEF Integration (Optional)
+                            </h6>
+                            <div class="mb-3">
+                                <label for="jefPath" class="form-label">JEF Installation Path</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="jefPath" 
+                                           placeholder="Path to your 0din-JEF installation directory">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="browseForJefFolder()">
+                                        <i class="fas fa-folder-open"></i> Browse
+                                    </button>
+                                    <button class="btn btn-outline-primary" type="button" onclick="validateJefPath()">
+                                        <i class="fas fa-check-circle"></i> Test
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    Path to the 0din-JEF directory (e.g., C:\Users\YourName\0din-JEF)
+                                </div>
+                                <div id="jefValidationResult" class="mt-2" style="display: none;"></div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="enableJefIntegration">
+                                    <label class="form-check-label" for="enableJefIntegration">
+                                        Enable JEF Security Analysis
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    Enables security analysis features for ChatGPT conversations
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>JEF Setup:</strong> 
+                                <a href="https://github.com/0din-ai/0din-JEF" target="_blank">Clone 0din-JEF</a>, 
+                                run <code>pip install -e .</code>, then set the path above.
                             </div>
                         </div>
 
@@ -108,14 +149,6 @@
                                         <input class="form-check-input" type="checkbox" id="defaultCaseSensitive">
                                         <label class="form-check-label" for="defaultCaseSensitive">
                                             Case sensitive by default
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="enableLiveSearch">
-                                        <label class="form-check-label" for="enableLiveSearch">
-                                            Enable live search (search as you type)
                                         </label>
                                     </div>
                                 </div>
@@ -152,6 +185,10 @@
                         <div class="text-muted small" id="currentTheme">Auto</div>
                     </div>
                     <div class="status-item mb-3">
+                        <strong>JEF Status:</strong>
+                        <div class="text-muted small" id="currentJefStatus">Not configured</div>
+                    </div>
+                    <div class="status-item mb-3">
                         <strong>Last Saved:</strong>
                         <div class="text-muted small" id="lastSaved">Never</div>
                     </div>
@@ -161,11 +198,10 @@
     </div>
 </div>
 
-
 <style>
 .settings-section {
-    border-left: 3px solid var(--accent-primary);
-    padding-left: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
 }
 
 .section-title {
@@ -175,12 +211,28 @@
 }
 
 .status-item {
-    padding: 0.5rem;
-    background: var(--bg-tertiary);
-    border-radius: 0.375rem;
+    padding: 0.5rem 0;
 }
 
-/* Dark mode form styles */
+.form-control-color {
+    width: 60px;
+    height: 38px;
+    padding: 0.375rem 0.25rem;
+}
+
+/* Dark mode overrides for settings page */
+.dark-mode .card {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.dark-mode .card-header {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
 .dark-mode .form-control,
 .dark-mode .form-select {
     background-color: var(--bg-tertiary);
@@ -196,23 +248,119 @@
     box-shadow: 0 0 0 0.2rem rgba(77, 171, 247, 0.25);
 }
 
-.dark-mode .form-label {
-    color: var(--text-primary);
+.dark-mode .form-control::placeholder {
+    color: var(--text-muted);
 }
 
 .dark-mode .form-text {
     color: var(--text-secondary);
 }
 
-.dark-mode .card {
-    background-color: var(--bg-secondary);
+.dark-mode .form-check-input {
+    background-color: var(--bg-tertiary);
     border-color: var(--border-color);
 }
 
-.dark-mode .card-header {
+.dark-mode .form-check-input:checked {
+    background-color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.dark-mode .btn-outline-secondary {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+
+.dark-mode .btn-outline-secondary:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.dark-mode .btn-outline-primary {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.dark-mode .btn-outline-primary:hover {
+    background-color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+}
+
+.dark-mode .btn-outline-info {
+    color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.dark-mode .btn-outline-info:hover {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+
+.dark-mode .btn-secondary {
     background-color: var(--bg-tertiary);
     border-color: var(--border-color);
     color: var(--text-primary);
+}
+
+.dark-mode .btn-secondary:hover {
+    background-color: var(--border-color);
+    border-color: var(--border-hover);
+}
+
+.dark-mode .alert-info {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-color: rgba(23, 162, 184, 0.3);
+    color: #9fd3e0;
+}
+
+.dark-mode .alert-success {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-color: rgba(25, 135, 84, 0.3);
+    color: #a3d9a5;
+}
+
+.dark-mode .alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.3);
+    color: #ffda6a;
+}
+
+.dark-mode .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: #f5c2c7;
+}
+
+.dark-mode .text-muted {
+    color: var(--text-muted) !important;
+}
+
+.dark-mode .small {
+    color: var(--text-secondary);
+}
+
+.dark-mode .input-group-text {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.dark-mode a {
+    color: var(--accent-primary);
+}
+
+.dark-mode a:hover {
+    color: var(--accent-secondary);
+}
+
+.dark-mode code {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
 }
 </style>
 
@@ -221,8 +369,9 @@ let currentSettings = {};
 
 // Load settings on page load
 document.addEventListener('DOMContentLoaded', function() {
-    loadSettings();
+    // Apply theme immediately to prevent flash
     applyCurrentTheme();
+    loadSettings();
 });
 
 // Apply current theme from localStorage
@@ -231,12 +380,27 @@ function applyCurrentTheme() {
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const currentTheme = savedTheme || systemTheme;
     
+    // Remove any existing theme classes first
+    document.body.classList.remove('dark-mode', 'light-mode');
+    
     if (currentTheme === 'dark') {
         document.body.classList.add('dark-mode');
-        document.body.classList.remove('light-mode');
     } else {
         document.body.classList.add('light-mode');
-        document.body.classList.remove('dark-mode');
+    }
+    
+    // Also update the theme toggle in the header if it exists
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+    
+    if (themeIcon && themeText) {
+        if (currentTheme === 'dark') {
+            themeIcon.className = 'fas fa-sun';
+            themeText.textContent = 'Light';
+        } else {
+            themeIcon.className = 'fas fa-moon';
+            themeText.textContent = 'Dark';
+        }
     }
 }
 
@@ -262,22 +426,22 @@ function populateForm(settings) {
     document.getElementById('accentColor').value = settings.accent_color || 'blue';
     document.getElementById('customPrimaryColor').value = settings.custom_primary_color || '#0d6efd';
     document.getElementById('customPrimaryColorHex').value = settings.custom_primary_color || '#0d6efd';
+    document.getElementById('jefPath').value = settings.jef_path || '';
+    document.getElementById('enableJefIntegration').checked = settings.enable_jef_integration || false;
     document.getElementById('defaultSearchMode').value = settings.default_search_mode || 'ALL';
     document.getElementById('maxResults').value = settings.max_results || 100;
     document.getElementById('defaultCaseSensitive').checked = settings.default_case_sensitive || false;
-    document.getElementById('enableLiveSearch').checked = settings.enable_live_search || false;
 }
 
 // Update status panel
 function updateStatusPanel() {
     document.getElementById('currentArchivePath').textContent = currentSettings.archive_path || 'Not set';
     document.getElementById('currentTheme').textContent = currentSettings.theme_mode || 'Auto';
-    if (currentSettings.last_saved) {
-        document.getElementById('lastSaved').textContent = new Date(currentSettings.last_saved).toLocaleString();
-    }
+    document.getElementById('currentJefStatus').textContent = currentSettings.enable_jef_integration ? 'Enabled' : 'Disabled';
+    document.getElementById('lastSaved').textContent = currentSettings.last_saved ? new Date(currentSettings.last_saved).toLocaleString() : 'Never';
 }
 
-// Handle form submission
+// Save settings
 document.getElementById('settingsForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -286,10 +450,11 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
         theme_mode: document.getElementById('themeMode').value,
         accent_color: document.getElementById('accentColor').value,
         custom_primary_color: document.getElementById('customPrimaryColor').value,
+        jef_path: document.getElementById('jefPath').value,
+        enable_jef_integration: document.getElementById('enableJefIntegration').checked,
         default_search_mode: document.getElementById('defaultSearchMode').value,
         max_results: parseInt(document.getElementById('maxResults').value),
-        default_case_sensitive: document.getElementById('defaultCaseSensitive').checked,
-        enable_live_search: document.getElementById('enableLiveSearch').checked
+        default_case_sensitive: document.getElementById('defaultCaseSensitive').checked
     };
     
     try {
@@ -304,8 +469,8 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
         if (response.ok) {
             currentSettings = settings;
             updateStatusPanel();
-            showNotification('Settings saved successfully!', 'success');
             applyThemeSettings();
+            showNotification('Settings saved successfully!', 'success');
         } else {
             const error = await response.json();
             showNotification('Error saving settings: ' + error.message, 'error');
@@ -318,7 +483,6 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
 // Apply theme settings
 function applyThemeSettings() {
     const themeMode = document.getElementById('themeMode').value;
-    const customColor = document.getElementById('customPrimaryColor').value;
     
     if (themeMode === 'dark') {
         document.body.classList.add('dark-mode');
@@ -329,21 +493,50 @@ function applyThemeSettings() {
         document.body.classList.remove('dark-mode');
         localStorage.setItem('theme', 'light');
     } else {
-        document.body.classList.remove('dark-mode', 'light-mode');
         localStorage.removeItem('theme');
-        applyCurrentTheme();
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (systemTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.body.classList.remove('light-mode');
+        } else {
+            document.body.classList.add('light-mode');
+            document.body.classList.remove('dark-mode');
+        }
     }
-    
-    document.documentElement.style.setProperty('--accent-primary', customColor);
+}
+
+// Browse for archive folder
+async function browseForFolder() {
+    try {
+        const response = await fetch('/api/browse-folder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.path) {
+            document.getElementById('archivePath').value = result.path;
+            showPathValidationResult('Folder selected: ' + result.path, 'success');
+        } else {
+            showPathValidationResult('Error: ' + (result.error || 'Could not open folder picker'), 'danger');
+        }
+        
+    } catch (err) {
+        console.error('Folder picker error:', err);
+        showPathValidationResult('Folder picker not available. Please enter path manually.', 'warning');
+        document.getElementById('archivePath').focus();
+    }
 }
 
 // Validate archive path
 async function validateArchivePath() {
-    const pathInput = document.getElementById('archivePath');
-    const path = pathInput.value.trim();
+    const path = document.getElementById('archivePath').value.trim();
     
     if (!path) {
-        showPathValidationResult('Please enter a path first', 'warning');
+        showPathValidationResult('Please enter a path first.', 'warning');
         return;
     }
     
@@ -359,16 +552,11 @@ async function validateArchivePath() {
         const result = await response.json();
         
         if (result.valid) {
-            showPathValidationResult(
-                'Valid archive path! Found ' + result.file_count + ' markdown files.',
-                'success'
-            );
+            showPathValidationResult(result.message, 'success');
         } else {
-            showPathValidationResult(
-                'Invalid path: ' + (result.error || 'Path not found'),
-                'danger'
-            );
+            showPathValidationResult(result.error, 'danger');
         }
+        
     } catch (error) {
         showPathValidationResult('Error validating path: ' + error.message, 'danger');
     }
@@ -376,21 +564,20 @@ async function validateArchivePath() {
 
 function showPathValidationResult(message, type) {
     const resultDiv = document.getElementById('pathValidationResult');
-    resultDiv.className = 'alert alert-' + type + ' small';
+    resultDiv.className = 'alert alert-' + (type === 'error' ? 'danger' : type);
     resultDiv.innerHTML = message;
     resultDiv.style.display = 'block';
     
-    if (type === 'success') {
-        setTimeout(function() {
+    if (type !== 'danger') {
+        setTimeout(() => {
             resultDiv.style.display = 'none';
-        }, 10000);
+        }, 5000);
     }
 }
 
-// Browse for folder using server-side folder picker
-async function browseForFolder() {
+// JEF-specific functions
+async function browseForJefFolder() {
     try {
-        // Call server-side folder picker
         const response = await fetch('/api/browse-folder', {
             method: 'POST',
             headers: {
@@ -401,111 +588,53 @@ async function browseForFolder() {
         const result = await response.json();
         
         if (result.success && result.path) {
-            document.getElementById('archivePath').value = result.path;
-            showPathValidationResult('Folder selected: ' + result.path, 'success');
-        } else if (result.cancelled) {
-            showPathValidationResult('Folder selection cancelled.', 'info');
+            document.getElementById('jefPath').value = result.path;
+            showJefValidationResult('JEF folder selected: ' + result.path, 'success');
         } else {
-            showPathValidationResult('Error: ' + (result.error || 'Could not open folder picker'), 'danger');
+            showJefValidationResult('Error: ' + (result.error || 'Could not open folder picker'), 'danger');
         }
         
     } catch (err) {
-        console.error('Folder picker error:', err);
-        showPathValidationResult('Folder picker not available. Please enter path manually.', 'warning');
-        document.getElementById('archivePath').focus();
+        console.error('JEF folder picker error:', err);
+        showJefValidationResult('Folder picker not available. Please enter path manually.', 'warning');
+        document.getElementById('jefPath').focus();
     }
 }
 
-// Get absolute path from directory handle
-async function getAbsolutePathFromHandle(dirHandle) {
-    try {
-        // Method 1: Try to resolve the path using the handle's resolve method
-        if (dirHandle.resolve) {
-            const pathSegments = await dirHandle.resolve();
-            if (pathSegments && pathSegments.length > 0) {
-                return pathSegments.join('/');
-            }
-        }
-        
-        // Method 2: Try to get path from the handle itself
-        if (dirHandle.getDirectoryHandle) {
-            // Try to traverse up to get full path
-            let currentHandle = dirHandle;
-            const pathParts = [dirHandle.name];
-            
-            try {
-                while (currentHandle) {
-                    const parentHandle = await currentHandle.getDirectoryHandle('..');
-                    if (parentHandle && parentHandle.name !== currentHandle.name) {
-                        pathParts.unshift(parentHandle.name);
-                        currentHandle = parentHandle;
-                    } else {
-                        break;
-                    }
-                }
-                
-                if (pathParts.length > 1) {
-                    return pathParts.join('/');
-                }
-            } catch (e) {
-                // Can't traverse up, just use the folder name
-            }
-        }
-        
-        // Method 3: Use queryPermission to potentially get more info
-        if (dirHandle.queryPermission) {
-            await dirHandle.queryPermission({ mode: 'read' });
-        }
-        
-        // Method 4: Try to get the path from the handle's internal properties
-        if (dirHandle.kind === 'directory' && dirHandle.name) {
-            // Last resort: try to construct path from available info
-            const name = dirHandle.name;
-            
-            // Check if we can get any path hints from the browser
-            if (navigator.userAgentData && navigator.userAgentData.platform) {
-                const platform = navigator.userAgentData.platform.toLowerCase();
-                if (platform.includes('windows')) {
-                    return 'C:\\Users\\' + (process.env.USERNAME || 'User') + '\\Documents\\' + name;
-                } else if (platform.includes('mac')) {
-                    return '/Users/' + (process.env.USER || 'user') + '/Documents/' + name;
-                } else {
-                    return '/home/' + (process.env.USER || 'user') + '/Documents/' + name;
-                }
-            }
-            
-            // Return just the folder name as last resort
-            return name;
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('Error getting absolute path:', error);
-        return null;
-    }
-}
-
-// Fallback for browsers without File System Access API
-function useWebkitDirectoryFallback() {
-    showPathValidationResult('Your browser does not support automatic folder selection. Please enter the full path manually.', 'warning');
+async function validateJefPath() {
+    const jefPath = document.getElementById('jefPath').value.trim();
     
-    // Focus the path input field
-    document.getElementById('archivePath').focus();
+    if (!jefPath) {
+        showJefValidationResult('Please enter a JEF path first.', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/jef-status');
+        const result = await response.json();
+        
+        if (result.available) {
+            showJefValidationResult('JEF is available and working!', 'success');
+        } else {
+            showJefValidationResult('JEF not found or not working. Check the path and installation.', 'danger');
+        }
+        
+    } catch (error) {
+        showJefValidationResult('Error testing JEF: ' + error.message, 'danger');
+    }
 }
 
-
-
-function showPathHelp() {
-    alert('Archive Path Help:\n\n' +
-          '1. Use a tool to convert your ChatGPT data to markdown files\n' +
-          '2. Organize the .md files in a folder structure\n' +
-          '3. Point this setting to the root folder containing your .md files\n' +
-          '4. The tool will recursively search all subfolders for .md files\n\n' +
-          'Examples:\n' +
-          'Windows: C:\\Users\\YourName\\Documents\\ChatGPT\\markdown\n' +
-          'macOS: /Users/YourName/Documents/ChatGPT/markdown\n' +
-          'Linux: /home/yourname/Documents/ChatGPT/markdown\n\n' +
-          'Note: The folder should contain .md files, not the original ChatGPT export.');
+function showJefValidationResult(message, type) {
+    const resultDiv = document.getElementById('jefValidationResult');
+    resultDiv.className = 'alert alert-' + (type === 'error' ? 'danger' : type);
+    resultDiv.innerHTML = message;
+    resultDiv.style.display = 'block';
+    
+    if (type !== 'danger') {
+        setTimeout(() => {
+            resultDiv.style.display = 'none';
+        }, 5000);
+    }
 }
 
 function resetToDefaults() {
@@ -515,10 +644,11 @@ function resetToDefaults() {
         document.getElementById('accentColor').value = 'blue';
         document.getElementById('customPrimaryColor').value = '#0d6efd';
         document.getElementById('customPrimaryColorHex').value = '#0d6efd';
+        document.getElementById('jefPath').value = '';
+        document.getElementById('enableJefIntegration').checked = false;
         document.getElementById('defaultSearchMode').value = 'ALL';
         document.getElementById('maxResults').value = 100;
         document.getElementById('defaultCaseSensitive').checked = false;
-        document.getElementById('enableLiveSearch').checked = false;
     }
 }
 

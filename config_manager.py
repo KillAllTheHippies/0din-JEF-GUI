@@ -59,7 +59,7 @@ class ConfigManager:
             "expand_tree_on_load": True,
             
             # JEF integration
-            "jef_path": "K:/0din/0din-JEF",
+            "jef_path": "",
             "enable_jef_integration": False,
             
             # Export settings

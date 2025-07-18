@@ -28,15 +28,15 @@ A modern, feature-rich web application for searching through your ChatGPT conver
 - **Multiple Export Formats**: CSV (full/paths-only) and JSON
 - **Path Options**: Relative or absolute file paths
 - **Rich Metadata**: File sizes, dates, match counts, conversation IDs
-- **Real-time Results**: Live search as you type
+- **Instant Results**: Fast search execution with result counts
 - **Result Statistics**: Search timing and match counts
 
 ### 🎨 Modern UI/UX
-- **Dark/Light Themes**: Auto-detects browser preference
+- **Dark/Light Themes**: Auto-detects browser preference with manual toggle
 - **Responsive Design**: Works on desktop, tablet, and mobile
-- **Smooth Animations**: Professional micro-interactions
+- **Settings Dashboard**: Comprehensive configuration interface
 - **Modern Typography**: Clean, readable interface
-- **Accessibility**: WCAG compliant color contrasts
+- **File Content Viewer**: Modal viewer with markdown rendering
 
 ## 🚀 Quick Start
 
@@ -164,7 +164,7 @@ update_time: 28/11/2024 at 04:06
 
 ### Performance Considerations
 - **File Tree Depth**: Limited to 3 levels by default
-- **Search Debouncing**: 500ms delay for live search
+- **Search Optimization**: Efficient file processing and matching
 - **Memory Usage**: Efficient file processing
 - **Large Archives**: Handles thousands of files
 
@@ -300,8 +300,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Core Classes
 - **`ChatSearchEngine`**: Main search logic and file processing
-- **`SimpleChatSearch`**: Command-line interface for testing
-- **JEF Integration**: Security analysis framework integration
+- **Flask Routes**: Web interface and API endpoints
+- **JEF Integration**: Security analysis framework integration (optional)
 
 ## 🔧 API Documentation
 
@@ -316,27 +316,27 @@ Performs search across ChatGPT archive files.
   "terms": "search terms",
   "mode": "ALL|ANY",
   "exclude": "excluded terms",
-  "case_sensitive": false,
-  "search_in": "all|title|content",
-  "date_from": "YYYY-MM-DD",
-  "date_to": "YYYY-MM-DD",
-  "included_folders": [],
-  "excluded_folders": []
+  "caseSensitive": false,
+  "searchIn": "all|title|content",
+  "dateFrom": "YYYY-MM-DD",
+  "dateTo": "YYYY-MM-DD",
+  "includedFolders": [],
+  "excludedFolders": []
 }
 ```
 
-#### `GET /file-tree`
+#### `GET /api/file-tree`
 Returns hierarchical file structure for navigation.
 
-#### `GET /file-content/<path:file_path>`
+#### `GET /api/file-content/<path:file_path>`
 Returns file content with metadata for viewing.
 
 ### JEF Integration Endpoints
 
-#### `GET /jef/status`
+#### `GET /api/jef-status`
 Check JEF framework availability.
 
-#### `POST /jef/analyze`
+#### `POST /api/jef-analyze`
 Run JEF analysis on file content.
 
 ## 🛡️ Security Considerations
@@ -353,37 +353,34 @@ Run JEF analysis on file content.
 
 ## 🧪 Testing
 
-### Running Tests
+The application includes debugging utilities:
+
 ```bash
-# Test basic search functionality
-python test_search_simple.py
-
-# Test JEF integration
-python test_jef_integration.py
-
 # Debug file tree generation
 python debug_tree.py
+
+# Check configuration
+python -c "from config_manager import config; print(config.get_all())"
 ```
 
 ## 📞 Support
 
 For issues, questions, or feature requests:
 - **GitHub Issues**: Create an issue with detailed information
-- **Documentation**: See `INSTALLATION.md` for setup details
-- **JEF Integration**: See `JEF_INTEGRATION_DEVELOPER_SUMMARY.md`
-- **Contributing**: See `CONTRIBUTING.md` for development guidelines
+- **Documentation**: See `docs/INSTALLATION.md` for setup details
+- **JEF Integration**: See `docs/JEF_INTEGRATION_ADVANCED.md`
+- **Contributing**: See `docs/CONTRIBUTING.md` for development guidelines
 
 ## 📚 Additional Documentation
 
-- [`INSTALLATION.md`](INSTALLATION.md) - Detailed installation guide
-- [`JEF_INTEGRATION_DEVELOPER_SUMMARY.md`](JEF_INTEGRATION_DEVELOPER_SUMMARY.md) - JEF integration overview
-- [`JEF_INTEGRATION_ADVANCED.md`](JEF_INTEGRATION_ADVANCED.md) - Advanced JEF features
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) - Contribution guidelines
-- [`CHANGELOG.md`](CHANGELOG.md) - Version history and changes
-- [`DEPLOYMENT.md`](DEPLOYMENT.md) - Deployment options and configurations
-- [`SECURITY.md`](SECURITY.md) - Security policy and best practices
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) - System architecture and design
-- [`API.md`](API.md) - Complete API documentation
+- [`docs/INSTALLATION.md`](docs/INSTALLATION.md) - Detailed installation guide
+- [`docs/JEF_INTEGRATION_ADVANCED.md`](docs/JEF_INTEGRATION_ADVANCED.md) - Advanced JEF features
+- [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) - Contribution guidelines
+- [`docs/CHANGELOG.md`](docs/CHANGELOG.md) - Version history and changes
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) - Deployment options and configurations
+- [`docs/SECURITY.md`](docs/SECURITY.md) - Security policy and best practices
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - System architecture and design
+- [`docs/API.md`](docs/API.md) - Complete API documentation
 - [`run_instructions.md`](run_instructions.md) - Quick start guide
 
 ---
