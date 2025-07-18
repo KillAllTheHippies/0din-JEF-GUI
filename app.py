@@ -12,22 +12,53 @@ import tempfile
 import markdown
 from markdown.extensions import codehilite, toc, tables
 
-# Add JEF to Python path
-JEF_PATH = Path("K:/0din/0din-JEF")
-if JEF_PATH.exists():
-    sys.path.insert(0, str(JEF_PATH))
-    try:
-        from jef import tiananmen, nerve_agent, meth, harry_potter, copyrights
-        JEF_AVAILABLE = True
-        print("JEF integration loaded successfully")
-    except ImportError as e:
-        JEF_AVAILABLE = False
-        print(f"JEF not available: {e}")
-else:
-    JEF_AVAILABLE = False
-    print(f"JEF path not found: {JEF_PATH}")
+# Import configuration manager
+from config_manager import config
 
 app = Flask(__name__)
+
+# Initialize JEF based on configuration
+def initialize_jef():
+    """Initialize JEF integration based on configuration settings."""
+    global JEF_AVAILABLE, JEF_PATH, tiananmen, nerve_agent, meth, harry_potter, copyrights
+    
+    jef_path = config.get("jef_path")
+    jef_enabled = config.get("enable_jef_integration", False)
+    
+    if not jef_enabled or not jef_path:
+        JEF_AVAILABLE = False
+        print("JEF integration disabled in configuration")
+        return
+    
+    JEF_PATH = Path(jef_path)
+    if JEF_PATH.exists():
+        sys.path.insert(0, str(JEF_PATH))
+        try:
+            from jef import tiananmen, nerve_agent, meth, harry_potter, copyrights
+            # Make modules available globally
+            globals()['tiananmen'] = tiananmen
+            globals()['nerve_agent'] = nerve_agent
+            globals()['meth'] = meth
+            globals()['harry_potter'] = harry_potter
+            globals()['copyrights'] = copyrights
+            JEF_AVAILABLE = True
+            print(f"JEF integration loaded successfully from {JEF_PATH}")
+        except ImportError as e:
+            JEF_AVAILABLE = False
+            print(f"JEF not available: {e}")
+    else:
+        JEF_AVAILABLE = False
+        print(f"JEF path not found: {JEF_PATH}")
+
+# Initialize JEF modules as None initially
+tiananmen = None
+nerve_agent = None
+meth = None
+harry_potter = None
+copyrights = None
+
+# Initialize JEF
+initialize_jef()
 
 class ChatSearchEngine:
     """
@@ -335,8 +366,8 @@ class ChatSearchEngine:
         print(f"Search completed. Found {len(results)} matching files")
         return results
 
-# Initialize search engine
-search_engine = ChatSearchEngine("ChatGPT chats/ChatGPT chats")
+# Initialize search engine with configured path
+search_engine = ChatSearchEngine(config.get("archive_path"))
 
 @app.route('/')
 def index():
@@ -351,6 +382,360 @@ def index():
         Rendered HTML template for the main application interface
     """
     return render_template('index.html')
+
+@app.route('/settings')
+def settings():
+    """
+    Render the settings/configuration interface.
+    
+    Returns the settings page where users can configure the application
+    including archive path, theme, search preferences, and other options.
+    
+    Returns:
+        Rendered HTML template for the settings interface
+    """
+    return render_template('settings.html')
+
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    """
+    Get current application settings.
+    
+    Returns:
+        JSON response containing all current configuration settings
+    """
+    try:
+        settings = config.get_all()
+        return jsonify(settings)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/settings', methods=['POST'])
+def save_settings():
+    """
+    Save application settings.
+    
+    Accepts JSON payload with configuration settings and validates
+    them before saving to the configuration file.
+    
+    Request JSON:
+        {
+            "archive_path": "path/to/archive",
+            "theme_mode": "auto|light|dark",
+            "accent_color": "blue|purple|green|...",
+            "custom_primary_color": "#hexcolor",
+            ...
+        }
+    
+    Returns:
+        JSON response indicating success or failure
+    """
+    try:
+        new_settings = request.get_json()
+        
+        if not new_settings:
+            return jsonify({'error': 'No settings provided'}), 400
+        
+        # Validate settings
+        old_settings = config.get_all()
+        config.update(new_settings)
+        errors = config.validate_settings()
+        
+        if errors:
+            # Restore old settings if validation fails
+            config.settings = old_settings
+            return jsonify({
+                'error': 'Validation failed',
+                'validation_errors': errors
+            }), 400
+        
+        # Save settings
+        if config.save_settings():
+            # Reinitialize components that depend on settings
+            global search_engine
+            archive_path = config.get("archive_path")
+            if archive_path and Path(archive_path).exists():
+                search_engine = ChatSearchEngine(archive_path)
+            
+            # Reinitialize JEF if settings changed
+            if 'jef_path' in new_settings or 'enable_jef_integration' in new_settings:
+                initialize_jef()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Settings saved successfully'
+            })
+        else:
+            return jsonify({'error': 'Failed to save settings'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/settings/validate', methods=['POST'])
+def validate_settings():
+    """
+    Validate settings without saving them.
+    
+    Returns:
+        JSON response with validation results
+    """
+    try:
+        test_settings = request.get_json()
+        
+        if not test_settings:
+            return jsonify({'error': 'No settings provided'}), 400
+        
+        # Temporarily update settings for validation
+        old_settings = config.get_all()
+        config.update(test_settings)
+        errors = config.validate_settings()
+        
+        # Restore original settings
+        config.settings = old_settings
+        
+        return jsonify({
+            'valid': len(errors) == 0,
+            'errors': errors
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/settings/reset', methods=['POST'])
+def reset_settings():
+    """
+    Reset all settings to default values.
+    
+    Returns:
+        JSON response indicating success or failure
+    """
+    try:
+        config.reset_to_defaults()
+        
+        if config.save_settings():
+            # Reinitialize components
+            global search_engine
+            search_engine = ChatSearchEngine(config.get("archive_path"))
+            initialize_jef()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Settings reset to defaults'
+            })
+        else:
+            return jsonify({'error': 'Failed to save default settings'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/settings/export')
+def export_settings():
+    """
+    Export current settings as a downloadable JSON file.
+    
+    Returns:
+        JSON file download with current settings
+    """
+    try:
+        # Create temporary file with settings
+        temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json', encoding='utf-8')
+        
+        export_data = {
+            **config.get_all(),
+            'exported_at': datetime.now().isoformat(),
+            'export_version': '1.0'
+        }
+        
+        json.dump(export_data, temp_file, indent=2, ensure_ascii=False)
+        temp_file.close()
+        
+        return send_file(
+            temp_file.name,
+            as_attachment=True,
+            download_name=f'chatgpt-search-settings-{datetime.now().strftime("%Y%m%d_%H%M%S")}.json',
+            mimetype='application/json'
+        )
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/browse-folder', methods=['POST'])
+def browse_folder():
+    """
+    Open a folder selection dialog on the server side.
+    
+    Returns:
+        JSON response with selected folder path
+    """
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        
+        # Create a root window and hide it
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        
+        # Open folder selection dialog
+        folder_path = filedialog.askdirectory(
+            title="Select ChatGPT Archive Folder",
+            mustexist=True
+        )
+        
+        # Clean up
+        root.destroy()
+        
+        if folder_path:
+            return jsonify({
+                'success': True,
+                'path': folder_path,
+                'message': f'Selected folder: {folder_path}'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'No folder selected'
+            })
+            
+    except ImportError:
+        return jsonify({
+            'success': False,
+            'error': 'tkinter not available - cannot open folder dialog'
+        }), 500
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/validate-archive-path', methods=['POST'])
+def validate_archive_path():
+    """
+    Validate an archive path to check if it exists and contains markdown files.
+    
+    Returns:
+        JSON response with validation results
+    """
+    try:
+        data = request.get_json()
+        path = data.get('path', '').strip()
+        
+        if not path:
+            return jsonify({
+                'valid': False,
+                'error': 'No path provided'
+            })
+        
+        archive_path = Path(path)
+        
+        # Check if path exists
+        if not archive_path.exists():
+            return jsonify({
+                'valid': False,
+                'error': 'Path does not exist'
+            })
+        
+        # Check if it's a directory
+        if not archive_path.is_dir():
+            return jsonify({
+                'valid': False,
+                'error': 'Path is not a directory'
+            })
+        
+        # Count markdown files and folders
+        try:
+            md_files = list(archive_path.rglob("*.md"))
+            folders = set()
+            
+            for file_path in md_files:
+                folders.add(str(file_path.parent))
+            
+            return jsonify({
+                'valid': True,
+                'file_count': len(md_files),
+                'folder_count': len(folders),
+                'message': f'Found {len(md_files)} markdown files in {len(folders)} folders'
+            })
+            
+        except PermissionError:
+            return jsonify({
+                'valid': False,
+                'error': 'Permission denied - cannot access this directory'
+            })
+        except Exception as e:
+            return jsonify({
+                'valid': False,
+                'error': f'Error scanning directory: {str(e)}'
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'valid': False,
+            'error': str(e)
+        })
+
+@app.route('/api/settings/import', methods=['POST'])
+def import_settings():
+    """
+    Import settings from an uploaded JSON file.
+    
+    Returns:
+        JSON response indicating success or failure
+    """
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not file.filename.endswith('.json'):
+            return jsonify({'error': 'File must be a JSON file'}), 400
+        
+        # Read and parse the file
+        content = file.read().decode('utf-8')
+        imported_settings = json.loads(content)
+        
+        # Remove export metadata
+        imported_settings.pop('exported_at', None)
+        imported_settings.pop('export_version', None)
+        
+        # Validate imported settings
+        old_settings = config.get_all()
+        config.update(imported_settings)
+        errors = config.validate_settings()
+        
+        if errors:
+            # Restore original settings if validation fails
+            config.settings = old_settings
+            return jsonify({
+                'error': 'Validation failed',
+                'validation_errors': errors
+            }), 400
+        
+        # Save imported settings
+        if config.save_settings():
+            # Reinitialize components
+            global search_engine
+            archive_path = config.get("archive_path")
+            if archive_path and Path(archive_path).exists():
+                search_engine = ChatSearchEngine(archive_path)
+            initialize_jef()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Settings imported successfully'
+            })
+        else:
+            # Restore original settings if save fails
+            config.settings = old_settings
+            return jsonify({'error': 'Failed to save imported settings'}), 500
+            
+    except json.JSONDecodeError:
+        return jsonify({'error': 'Invalid JSON file'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -666,19 +1051,34 @@ def jef_analyze():
         
         try:
             if test_type == 'tiananmen':
-                result = tiananmen.score(content)
+                if tiananmen is None:
+                    error = 'Tiananmen module not available'
+                else:
+                    result = tiananmen.score(content)
             elif test_type == 'nerve_agent':
-                result = nerve_agent.score(content)
+                if nerve_agent is None:
+                    error = 'Nerve agent module not available'
+                else:
+                    result = nerve_agent.score(content)
             elif test_type == 'meth':
-                result = meth.score(content)
+                if meth is None:
+                    error = 'Meth module not available'
+                else:
+                    result = meth.score(content)
             elif test_type == 'harry_potter':
-                if not reference_text:
+                if harry_potter is None:
+                    error = 'Harry Potter module not available'
+                elif not reference_text:
                     return jsonify({'error': 'Reference text required for Harry Potter analysis'}), 400
-                result = harry_potter.score(content, reference_text)
+                else:
+                    result = harry_potter.score(content, reference_text)
             elif test_type == 'copyright':
-                if not reference_text:
+                if copyrights is None:
+                    error = 'Copyright module not available'
+                elif not reference_text:
                     return jsonify({'error': 'Reference text required for copyright analysis'}), 400
-                result = copyrights.score(content, reference_text)
+                else:
+                    result = copyrights.score(content, reference_text)
             else:
                 return jsonify({'error': f'Unknown test type: {test_type}'}), 400
                 
@@ -786,18 +1186,31 @@ def jef_batch_analyze():
                 
                 try:
                     if test_type == 'tiananmen':
-                        result = tiananmen.score(content)
+                        if tiananmen is None:
+                            error = 'Tiananmen module not available'
+                        else:
+                            result = tiananmen.score(content)
                     elif test_type == 'nerve_agent':
-                        result = nerve_agent.score(content)
+                        if nerve_agent is None:
+                            error = 'Nerve agent module not available'
+                        else:
+                            result = nerve_agent.score(content)
                     elif test_type == 'meth':
-                        result = meth.score(content)
+                        if meth is None:
+                            error = 'Meth module not available'
+                        else:
+                            result = meth.score(content)
                     elif test_type == 'harry_potter':
-                        if not reference_text:
+                        if harry_potter is None:
+                            error = 'Harry Potter module not available'
+                        elif not reference_text:
                             error = 'Reference text required for Harry Potter analysis'
                         else:
                             result = harry_potter.score(content, reference_text)
                     elif test_type == 'copyright':
-                        if not reference_text:
+                        if copyrights is None:
+                            error = 'Copyright module not available'
+                        elif not reference_text:
                             error = 'Reference text required for copyright analysis'
                         else:
                             result = copyrights.score(content, reference_text)
@@ -834,4 +1247,15 @@ def jef_batch_analyze():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use configuration settings for server startup
+    host = config.get("host", "0.0.0.0")
+    port = config.get("port", 5000)
+    debug = config.get("debug", True)
+    
+    print(f"Starting ChatGPT Archive Search Tool...")
+    print(f"Archive path: {config.get('archive_path')}")
+    print(f"JEF integration: {'Enabled' if JEF_AVAILABLE else 'Disabled'}")
+    print(f"Server: http://{host}:{port}")
+    print(f"Settings: http://{host}:{port}/settings")
+    
+    app.run(debug=debug, host=host, port=port)

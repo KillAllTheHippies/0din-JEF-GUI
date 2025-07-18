@@ -127,6 +127,38 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: absolute;
+            top: 50%;
+            left: 2rem;
+            transform: translateY(-50%);
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         .theme-toggle {
             position: absolute;
             top: 50%;
@@ -1193,6 +1225,16 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12 position-relative">
+                    <nav class="header-nav">
+                        <a href="/" class="nav-link" id="nav-search">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </a>
+                        <a href="/settings" class="nav-link" id="nav-settings">
+                            <i class="fas fa-cog"></i>
+                            Settings
+                        </a>
+                    </nav>
                     <h1 class="text-center">
                         <i class="fas fa-brain me-2"></i>
                         ChatGPT Archive Search
@@ -1251,7 +1293,21 @@
         // Initialize theme on page load
         document.addEventListener('DOMContentLoaded', function() {
             setTheme(getPreferredTheme());
+            updateActiveNavigation();
         });
+
+        // Update active navigation based on current page
+        function updateActiveNavigation() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        }
 
         // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {

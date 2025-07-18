@@ -1,0 +1,549 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - ChatGPT Archive Search{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="header-section mb-4">
+                <h2><i class="fas fa-cog"></i> Application Settings</h2>
+                <p class="text-muted">Configure your ChatGPT Archive Search application</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Settings Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-sliders-h"></i> Configuration Options</h5>
+                </div>
+                <div class="card-body">
+                    <form id="settingsForm">
+                        <!-- Archive Path Settings -->
+                        <div class="settings-section mb-4">
+                            <h6 class="section-title">
+                                <i class="fas fa-folder-open"></i> Archive Location
+                            </h6>
+                            <div class="mb-3">
+                                <label for="archivePath" class="form-label">Root Archive Folder</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="archivePath" 
+                                           placeholder="Enter path to your markdown files folder">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="browseForFolder()">
+                                        <i class="fas fa-folder-open"></i> Browse
+                                    </button>
+                                    <button class="btn btn-outline-primary" type="button" onclick="validateArchivePath()">
+                                        <i class="fas fa-check-circle"></i> Validate
+                                    </button>
+                                    <button class="btn btn-outline-info" type="button" onclick="showPathHelp()">
+                                        <i class="fas fa-question-circle"></i> Help
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    Path to the folder containing your converted ChatGPT conversation files (.md format)
+                                </div>
+                                <div id="pathValidationResult" class="mt-2" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Theme Settings -->
+                        <div class="settings-section mb-4">
+                            <h6 class="section-title">
+                                <i class="fas fa-palette"></i> Appearance
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="themeMode" class="form-label">Theme Mode</label>
+                                    <select class="form-select" id="themeMode">
+                                        <option value="auto">Auto (Follow System)</option>
+                                        <option value="light">Light Mode</option>
+                                        <option value="dark">Dark Mode</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="accentColor" class="form-label">Accent Color</label>
+                                    <select class="form-select" id="accentColor">
+                                        <option value="blue">Blue (Default)</option>
+                                        <option value="purple">Purple</option>
+                                        <option value="green">Green</option>
+                                        <option value="orange">Orange</option>
+                                        <option value="red">Red</option>
+                                        <option value="teal">Teal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label for="customPrimaryColor" class="form-label">Custom Primary Color</label>
+                                <div class="input-group">
+                                    <input type="color" class="form-control form-control-color" id="customPrimaryColor" value="#0d6efd">
+                                    <input type="text" class="form-control" id="customPrimaryColorHex" placeholder="#0d6efd">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Settings -->
+                        <div class="settings-section mb-4">
+                            <h6 class="section-title">
+                                <i class="fas fa-search"></i> Search Preferences
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="defaultSearchMode" class="form-label">Default Search Mode</label>
+                                    <select class="form-select" id="defaultSearchMode">
+                                        <option value="ALL">ALL terms (AND)</option>
+                                        <option value="ANY">ANY terms (OR)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="maxResults" class="form-label">Max Results per Search</label>
+                                    <input type="number" class="form-control" id="maxResults" min="10" max="1000" value="100">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="defaultCaseSensitive">
+                                        <label class="form-check-label" for="defaultCaseSensitive">
+                                            Case sensitive by default
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="enableLiveSearch">
+                                        <label class="form-check-label" for="enableLiveSearch">
+                                            Enable live search (search as you type)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Settings
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetToDefaults()">
+                                <i class="fas fa-undo"></i> Reset to Defaults
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Settings Info Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle"></i> Current Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="status-item mb-3">
+                        <strong>Archive Path:</strong>
+                        <div class="text-muted small" id="currentArchivePath">Not set</div>
+                    </div>
+                    <div class="status-item mb-3">
+                        <strong>Theme:</strong>
+                        <div class="text-muted small" id="currentTheme">Auto</div>
+                    </div>
+                    <div class="status-item mb-3">
+                        <strong>Last Saved:</strong>
+                        <div class="text-muted small" id="lastSaved">Never</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.settings-section {
+    border-left: 3px solid var(--accent-primary);
+    padding-left: 1rem;
+}
+
+.section-title {
+    color: var(--accent-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.status-item {
+    padding: 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 0.375rem;
+}
+
+/* Dark mode form styles */
+.dark-mode .form-control,
+.dark-mode .form-select {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+    background-color: var(--bg-tertiary);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(77, 171, 247, 0.25);
+}
+
+.dark-mode .form-label {
+    color: var(--text-primary);
+}
+
+.dark-mode .form-text {
+    color: var(--text-secondary);
+}
+
+.dark-mode .card {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+.dark-mode .card-header {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+</style>
+
+<script>
+let currentSettings = {};
+
+// Load settings on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    applyCurrentTheme();
+});
+
+// Apply current theme from localStorage
+function applyCurrentTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const currentTheme = savedTheme || systemTheme;
+    
+    if (currentTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+    } else {
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+// Load current settings
+async function loadSettings() {
+    try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+            currentSettings = await response.json();
+            populateForm(currentSettings);
+            updateStatusPanel();
+        }
+    } catch (error) {
+        console.error('Error loading settings:', error);
+        showNotification('Error loading settings', 'error');
+    }
+}
+
+// Populate form with settings
+function populateForm(settings) {
+    document.getElementById('archivePath').value = settings.archive_path || '';
+    document.getElementById('themeMode').value = settings.theme_mode || 'auto';
+    document.getElementById('accentColor').value = settings.accent_color || 'blue';
+    document.getElementById('customPrimaryColor').value = settings.custom_primary_color || '#0d6efd';
+    document.getElementById('customPrimaryColorHex').value = settings.custom_primary_color || '#0d6efd';
+    document.getElementById('defaultSearchMode').value = settings.default_search_mode || 'ALL';
+    document.getElementById('maxResults').value = settings.max_results || 100;
+    document.getElementById('defaultCaseSensitive').checked = settings.default_case_sensitive || false;
+    document.getElementById('enableLiveSearch').checked = settings.enable_live_search || false;
+}
+
+// Update status panel
+function updateStatusPanel() {
+    document.getElementById('currentArchivePath').textContent = currentSettings.archive_path || 'Not set';
+    document.getElementById('currentTheme').textContent = currentSettings.theme_mode || 'Auto';
+    if (currentSettings.last_saved) {
+        document.getElementById('lastSaved').textContent = new Date(currentSettings.last_saved).toLocaleString();
+    }
+}
+
+// Handle form submission
+document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const settings = {
+        archive_path: document.getElementById('archivePath').value,
+        theme_mode: document.getElementById('themeMode').value,
+        accent_color: document.getElementById('accentColor').value,
+        custom_primary_color: document.getElementById('customPrimaryColor').value,
+        default_search_mode: document.getElementById('defaultSearchMode').value,
+        max_results: parseInt(document.getElementById('maxResults').value),
+        default_case_sensitive: document.getElementById('defaultCaseSensitive').checked,
+        enable_live_search: document.getElementById('enableLiveSearch').checked
+    };
+    
+    try {
+        const response = await fetch('/api/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        });
+        
+        if (response.ok) {
+            currentSettings = settings;
+            updateStatusPanel();
+            showNotification('Settings saved successfully!', 'success');
+            applyThemeSettings();
+        } else {
+            const error = await response.json();
+            showNotification('Error saving settings: ' + error.message, 'error');
+        }
+    } catch (error) {
+        showNotification('Error saving settings: ' + error.message, 'error');
+    }
+});
+
+// Apply theme settings
+function applyThemeSettings() {
+    const themeMode = document.getElementById('themeMode').value;
+    const customColor = document.getElementById('customPrimaryColor').value;
+    
+    if (themeMode === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+        localStorage.setItem('theme', 'dark');
+    } else if (themeMode === 'light') {
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+    } else {
+        document.body.classList.remove('dark-mode', 'light-mode');
+        localStorage.removeItem('theme');
+        applyCurrentTheme();
+    }
+    
+    document.documentElement.style.setProperty('--accent-primary', customColor);
+}
+
+// Validate archive path
+async function validateArchivePath() {
+    const pathInput = document.getElementById('archivePath');
+    const path = pathInput.value.trim();
+    
+    if (!path) {
+        showPathValidationResult('Please enter a path first', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/validate-archive-path', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ path: path })
+        });
+        
+        const result = await response.json();
+        
+        if (result.valid) {
+            showPathValidationResult(
+                'Valid archive path! Found ' + result.file_count + ' markdown files.',
+                'success'
+            );
+        } else {
+            showPathValidationResult(
+                'Invalid path: ' + (result.error || 'Path not found'),
+                'danger'
+            );
+        }
+    } catch (error) {
+        showPathValidationResult('Error validating path: ' + error.message, 'danger');
+    }
+}
+
+function showPathValidationResult(message, type) {
+    const resultDiv = document.getElementById('pathValidationResult');
+    resultDiv.className = 'alert alert-' + type + ' small';
+    resultDiv.innerHTML = message;
+    resultDiv.style.display = 'block';
+    
+    if (type === 'success') {
+        setTimeout(function() {
+            resultDiv.style.display = 'none';
+        }, 10000);
+    }
+}
+
+// Browse for folder using server-side folder picker
+async function browseForFolder() {
+    try {
+        // Call server-side folder picker
+        const response = await fetch('/api/browse-folder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.path) {
+            document.getElementById('archivePath').value = result.path;
+            showPathValidationResult('Folder selected: ' + result.path, 'success');
+        } else if (result.cancelled) {
+            showPathValidationResult('Folder selection cancelled.', 'info');
+        } else {
+            showPathValidationResult('Error: ' + (result.error || 'Could not open folder picker'), 'danger');
+        }
+        
+    } catch (err) {
+        console.error('Folder picker error:', err);
+        showPathValidationResult('Folder picker not available. Please enter path manually.', 'warning');
+        document.getElementById('archivePath').focus();
+    }
+}
+
+// Get absolute path from directory handle
+async function getAbsolutePathFromHandle(dirHandle) {
+    try {
+        // Method 1: Try to resolve the path using the handle's resolve method
+        if (dirHandle.resolve) {
+            const pathSegments = await dirHandle.resolve();
+            if (pathSegments && pathSegments.length > 0) {
+                return pathSegments.join('/');
+            }
+        }
+        
+        // Method 2: Try to get path from the handle itself
+        if (dirHandle.getDirectoryHandle) {
+            // Try to traverse up to get full path
+            let currentHandle = dirHandle;
+            const pathParts = [dirHandle.name];
+            
+            try {
+                while (currentHandle) {
+                    const parentHandle = await currentHandle.getDirectoryHandle('..');
+                    if (parentHandle && parentHandle.name !== currentHandle.name) {
+                        pathParts.unshift(parentHandle.name);
+                        currentHandle = parentHandle;
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (pathParts.length > 1) {
+                    return pathParts.join('/');
+                }
+            } catch (e) {
+                // Can't traverse up, just use the folder name
+            }
+        }
+        
+        // Method 3: Use queryPermission to potentially get more info
+        if (dirHandle.queryPermission) {
+            await dirHandle.queryPermission({ mode: 'read' });
+        }
+        
+        // Method 4: Try to get the path from the handle's internal properties
+        if (dirHandle.kind === 'directory' && dirHandle.name) {
+            // Last resort: try to construct path from available info
+            const name = dirHandle.name;
+            
+            // Check if we can get any path hints from the browser
+            if (navigator.userAgentData && navigator.userAgentData.platform) {
+                const platform = navigator.userAgentData.platform.toLowerCase();
+                if (platform.includes('windows')) {
+                    return 'C:\\Users\\' + (process.env.USERNAME || 'User') + '\\Documents\\' + name;
+                } else if (platform.includes('mac')) {
+                    return '/Users/' + (process.env.USER || 'user') + '/Documents/' + name;
+                } else {
+                    return '/home/' + (process.env.USER || 'user') + '/Documents/' + name;
+                }
+            }
+            
+            // Return just the folder name as last resort
+            return name;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error getting absolute path:', error);
+        return null;
+    }
+}
+
+// Fallback for browsers without File System Access API
+function useWebkitDirectoryFallback() {
+    showPathValidationResult('Your browser does not support automatic folder selection. Please enter the full path manually.', 'warning');
+    
+    // Focus the path input field
+    document.getElementById('archivePath').focus();
+}
+
+
+
+function showPathHelp() {
+    alert('Archive Path Help:\n\n' +
+          '1. Use a tool to convert your ChatGPT data to markdown files\n' +
+          '2. Organize the .md files in a folder structure\n' +
+          '3. Point this setting to the root folder containing your .md files\n' +
+          '4. The tool will recursively search all subfolders for .md files\n\n' +
+          'Examples:\n' +
+          'Windows: C:\\Users\\YourName\\Documents\\ChatGPT\\markdown\n' +
+          'macOS: /Users/YourName/Documents/ChatGPT/markdown\n' +
+          'Linux: /home/yourname/Documents/ChatGPT/markdown\n\n' +
+          'Note: The folder should contain .md files, not the original ChatGPT export.');
+}
+
+function resetToDefaults() {
+    if (confirm('Reset all settings to defaults?')) {
+        document.getElementById('archivePath').value = '';
+        document.getElementById('themeMode').value = 'auto';
+        document.getElementById('accentColor').value = 'blue';
+        document.getElementById('customPrimaryColor').value = '#0d6efd';
+        document.getElementById('customPrimaryColorHex').value = '#0d6efd';
+        document.getElementById('defaultSearchMode').value = 'ALL';
+        document.getElementById('maxResults').value = 100;
+        document.getElementById('defaultCaseSensitive').checked = false;
+        document.getElementById('enableLiveSearch').checked = false;
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-' + (type === 'error' ? 'danger' : type) + ' alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(function() {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Color picker sync
+document.getElementById('customPrimaryColor').addEventListener('change', function(e) {
+    document.getElementById('customPrimaryColorHex').value = e.target.value;
+});
+
+document.getElementById('customPrimaryColorHex').addEventListener('change', function(e) {
+    document.getElementById('customPrimaryColor').value = e.target.value;
+});
+</script>
+{% endblock %}
