@@ -1,123 +1,75 @@
 # How to Run the ChatGPT Archive Search Tool
 
-## Quick Start
+## 🚀 Quick Start
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+1.  **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### 2. Run the Application
-```bash
-python app.py
-```
+2.  **Run the Application:**
+    ```bash
+    python app.py
+    ```
 
-### 3. Open in Browser
-```
-http://localhost:5000
-```
+3.  **Open in Browser:**
+    Navigate to `http://localhost:5000`
 
-## Initial Setup
+## ⚙️ Initial Setup
 
 ### Configure Archive Path
-1. Click **Settings** in the top navigation
-2. Set **Root Archive Folder** to your ChatGPT markdown files directory
-3. Click **Validate** to verify the path
-4. Click **Save Settings**
 
-Example path: `C:\Users\YourName\Documents\ChatGPT_Archive`
+1.  Click the **Settings** button in the top navigation bar.
+2.  In the **Archive Settings** section, set the **Root Archive Folder** to the directory where your ChatGPT markdown files are stored.
+3.  Click **Validate** to ensure the path is correct.
+4.  Click **Save Settings** at the bottom of the page.
+
+**Example Path:** `C:\Users\YourName\Documents\ChatGPT_Archive`
 
 ### Basic Usage
-1. Enter search terms in the main search box
-2. Choose **ALL** (AND logic) or **ANY** (OR logic)
-3. Click **Search**
-4. Use the file tree to include/exclude folders
-5. Export results as CSV or JSON
 
-## Troubleshooting
+1.  Enter your search query in the main search bar.
+2.  Choose the search mode: **ALL** (for AND logic) or **ANY** (for OR logic).
+3.  Click the **Search** button.
+4.  Use the interactive file tree on the left to include or exclude specific folders from your search.
+5.  Export your search results to CSV or JSON using the **Export** buttons.
 
-**"Module not found" errors:**
-```bash
-pip install -r requirements.txt
-```
+## 🔬 JEF Integration (Optional)
 
-**Port already in use:**
-- Change port in `app.py` line 1260: `app.run(port=5001)`
-
-**Archive not found:**
-- Use Settings to set correct archive path
-- Ensure folder contains .md files
-
-**JEF integration issues:**
-- Set JEF path in settings if you have JEF installed
-- JEF is optional - app works without it
-
-## Expected Output
-```
-Starting ChatGPT Archive Search Tool...
-Archive path: C:\path\to\your\archive
-JEF integration: Disabled
-Server: http://0.0.0.0:5000
- * Running on http://127.0.0.1:5000
-```
-
-## File Format
-Your markdown files should have this structure:
-```markdown
----
-aliases: "Conversation Title"
-conversation_id: abc123
-create_time: 28/11/2024 at 04:02
----
-
-# Title: Conversation Title
-
-### User, on 28/11/2024 at 04:02;
-> User message
-
-#### Assistant, on 28/11/2024 at 04:02;
->> Assistant response
-```
-
-## JEF Integration (Optional)
-
-JEF (Jailbreak Evaluation Framework) provides security analysis of ChatGPT conversations.
+JEF (Jailbreak Evaluation Framework) provides advanced security analysis of ChatGPT conversations.
 
 ### Installing JEF
-1. **Clone JEF repository:**
-   ```bash
-   git clone https://github.com/0din-ai/0din-JEF.git
-   cd 0din-JEF
-   pip install -e .
-   ```
 
-2. **Note the installation path** (example: `C:\Users\YourName\0din-JEF` or `/home/user/0din-JEF`)
+1.  **Clone the JEF repository:**
+    ```bash
+    git clone https://github.com/0din-ai/0din-JEF.git
+    ```
+    **Note:** You do not need to install it, just clone it.
 
-**Important**: The application expects to import JEF modules directly, so ensure the JEF installation is complete and working.
+2.  **Note the path** to the cloned repository (e.g., `C:\Users\YourName\0din-JEF`). This is the path you will use in the application settings.
 
-### Configure JEF in Application
-1. Go to **Settings** in the web interface
-2. Find **JEF Integration** section
-3. Set **JEF Path** to your JEF installation directory
-4. Enable **JEF Integration**
-5. Click **Save Settings**
+### Configure JEF in the Application
+
+1.  Go to **Settings** in the web interface.
+2.  Find the **JEF Integration** section.
+3.  Set the **JEF Path** to the directory where you cloned the `0din-JEF` repository.
+4.  Enable the **JEF Integration** toggle.
+5.  Click **Save Settings**.
 
 ### Using JEF Analysis
-1. Perform a search to get results
-2. Click on a file result to select it
-3. Choose analysis type (Tiananmen, Nerve Agent, etc.)
-4. Click **Run Analysis** for single file or **Batch Analysis** for all results
-5. View security analysis scores in the results
 
-### JEF Troubleshooting
-**JEF not found:**
-- Verify the JEF path points to the correct directory
-- Ensure JEF dependencies are installed: `pip install -e .` in JEF directory
+1.  After performing a search, click on a file in the results list to select it.
+2.  Choose an analysis type from the dropdown menu (e.g., Tiananmen, Nerve Agent).
+3.  Click **Run Analysis** for a single file or **Batch Analysis** to analyze all files in the current search results.
+4.  View the security analysis scores in the results table.
 
-**Analysis fails:**
-- Check that JEF modules are properly installed
-- Verify file permissions in JEF directory
+## 🔧 Troubleshooting
+
+-   **"Module not found" errors:** Ensure you have installed all dependencies by running `pip install -r requirements.txt`.
+-   **Port already in use:** You can change the port by editing `app.py` around line 1260: `app.run(port=5001)`.
+-   **Archive not found:** Double-check the **Root Archive Folder** path in the settings. Make sure the folder contains `.md` files.
+-   **JEF not found:** Verify that the **JEF Path** in the settings points to the correct directory where you cloned the `0din-JEF` repository.
 
 ---
 
-For detailed documentation, see the `docs/` folder.
+For more detailed documentation, please refer to the files in the `docs/` folder.
