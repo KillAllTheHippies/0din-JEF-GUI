@@ -11,10 +11,10 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts (for 90s theme) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('theme_css') }}">
@@ -1315,6 +1315,98 @@
         .nineties-theme .tree-toggle, .nineties-theme .tree-icon {
             color: #00BF63 !important;
         }
+
+        /* Steampunk Theme */
+        .steampunk-theme, .steampunk-theme body {
+            font-family: 'IM Fell English SC', serif !important;
+            background-color: #f4e9d8 !important; /* Aged paper */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: #4a2c2a !important; /* Dark wood */
+        }
+
+        .steampunk-theme .header {
+            background: #8B4513 !important; /* SaddleBrown */
+            border-bottom: 4px solid #B87333; /* Copper */
+            text-shadow: 1px 1px #D2691E; /* Chocolate */
+        }
+
+        .steampunk-theme .header h1 {
+            font-family: 'IM Fell English SC', serif;
+            font-size: 2rem;
+            color: #f4e9d8; /* Aged paper */
+        }
+
+        .steampunk-theme .nav-link {
+            color: #f4e9d8 !important;
+        }
+        .steampunk-theme .nav-link:hover, .steampunk-theme .nav-link.active {
+            background: #B87333 !important; /* Copper */
+            color: #4a2c2a !important;
+        }
+
+        .steampunk-theme .search-container,
+        .steampunk-theme .card,
+        .steampunk-theme .filters-panel,
+        .steampunk-theme .result-item,
+        .steampunk-theme .sidebar,
+        .steampunk-theme .export-buttons,
+        .steampunk-theme .jef-controls-section {
+            background: #D2B48C !important; /* Tan */
+            border-radius: 2px !important;
+            border: 2px solid #8B4513; /* SaddleBrown */
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.4) !important;
+        }
+
+        .steampunk-theme .form-control,
+        .steampunk-theme .form-select,
+        .steampunk-theme .btn {
+            font-family: 'IM Fell English SC', serif !important;
+            border-radius: 2px !important;
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5) !important;
+            border: 2px solid #8B4513 !important;
+            background: #f4e9d8 !important; /* Aged paper */
+            color: #4a2c2a !important;
+        }
+
+        .steampunk-theme .form-control:focus {
+            border-color: #B87333 !important; /* Copper */
+            color: #4a2c2a !important;
+        }
+
+        .steampunk-theme .btn-primary {
+            background: #B87333 !important; /* Copper */
+            border-color: #8B4513 !important;
+            color: #f4e9d8 !important;
+        }
+        .steampunk-theme .btn-primary:hover {
+            background: #8B4513 !important;
+            border-color: #B87333 !important;
+        }
+
+        .steampunk-theme .result-title {
+            color: #8B4513 !important; /* SaddleBrown */
+        }
+
+        .steampunk-theme .result-path {
+            background: #D2B48C !important; /* Tan */
+            border-color: #8B4513 !important;
+            color: #4a2c2a !important;
+            font-size: 0.8rem;
+        }
+
+        .steampunk-theme .match-count {
+            background: #8B4513 !important;
+            color: #f4e9d8 !important;
+        }
+
+        .steampunk-theme .tree-item.selected {
+            background: #B87333 !important;
+            color: #4a2c2a !important;
+        }
+
+        .steampunk-theme .tree-toggle, .steampunk-theme .tree-icon {
+            color: #8B4513 !important;
+        }
     </style>
 </head>
 <body>
@@ -1362,16 +1454,20 @@
             const accentColor = localStorage.getItem('accent_color') || 'arctic';
             const customColor = localStorage.getItem('custom_primary_color') || '#0d6efd';
 
-            // Handle 90s theme first as it's a full override
+            // Remove all theme classes first
+            document.body.classList.remove('nineties-theme', 'steampunk-theme', 'dark-mode', 'light-mode');
+
+            // Handle special themes first
             if (accentColor === 'nineties') {
                 document.body.classList.add('nineties-theme');
-                document.body.classList.remove('dark-mode', 'light-mode');
-                return;
+                return; // Exit, no other styles needed
             }
-            
-            document.body.classList.remove('nineties-theme');
+            if (accentColor === 'steampunk') {
+                document.body.classList.add('steampunk-theme');
+                return; // Exit, no other styles needed
+            }
 
-            // Apply light/dark mode
+            // Apply light/dark mode for standard themes
             let effectiveTheme = themeMode;
             if (themeMode === 'auto') {
                 effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -1379,13 +1475,11 @@
 
             if (effectiveTheme === 'dark') {
                 document.body.classList.add('dark-mode');
-                document.body.classList.remove('light-mode');
             } else {
                 document.body.classList.add('light-mode');
-                document.body.classList.remove('dark-mode');
             }
 
-            // Apply accent colors for non-90s themes
+            // Apply accent colors for standard themes
             const colorPalettes = {
                 "arctic": {"primary": "#0A84FF", "secondary": "#30B4FF"},
                 "sunset": {"primary": "#FF6B6B", "secondary": "#FFD166"},
