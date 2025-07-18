@@ -43,7 +43,7 @@ class ConfigManager:
             
             # Theme settings
             "theme_mode": "auto",  # auto, light, dark
-            "accent_color": "blue",
+            "theme": "nineties",  # nineties, steampunk, amstrad, amiga, mario, matrix, custom
             "custom_primary_color": "#0d6efd",
             
             # Search preferences
@@ -283,21 +283,23 @@ class ConfigManager:
             Dictionary of CSS variable names and values
         """
         custom_color = self.get("custom_primary_color", "#0d6efd")
-        accent_color = self.get("accent_color", "blue")
+        theme = self.get("theme", "arctic")
         
-        # Color palette based on accent color
+        # Color palette based on theme
         color_palettes = {
-            "arctic": {"primary": "#0A84FF", "secondary": "#30B4FF"},      # A modern, cool blue
-            "sunset": {"primary": "#FF6B6B", "secondary": "#FFD166"},      # A warm, energetic orange/red
-            "forest": {"primary": "#2E8B57", "secondary": "#8FBC8F"},      # A natural, calming green
-            "amethyst": {"primary": "#9B59B6", "secondary": "#C39BD3"},    # A stylish, elegant purple
+            "nineties": {"primary": "#FF00FF", "secondary": "#00FFFF"},    # 90s video game magenta and cyan
+            "steampunk": {"primary": "#8B4513", "secondary": "#CD853F"},   # Steampunk brown and tan
+            "amstrad": {"primary": "#00FF00", "secondary": "#008000"},     # Amstrad CPC464 green screen
+            "amiga": {"primary": "#FF6600", "secondary": "#0066FF"},       # Classic Amiga orange and blue
+            "mario": {"primary": "#FF0000", "secondary": "#00AA00"},       # Mario red and green
+            "matrix": {"primary": "#00FF41", "secondary": "#008F11"},      # Matrix green
             "custom": {"primary": self.get("custom_primary_color", "#0d6efd"), "secondary": "#6c757d"} # Custom color
         }
         
-        palette = color_palettes.get(accent_color, color_palettes["arctic"])
+        palette = color_palettes.get(theme, color_palettes["nineties"])
         
         return {
-            "--accent-primary": custom_color if accent_color == "custom" else palette["primary"],
+            "--accent-primary": custom_color if theme == "custom" else palette["primary"],
             "--accent-secondary": palette["secondary"],
             "--sidebar-width": f"{self.get('sidebar_width', 300)}px"
         }

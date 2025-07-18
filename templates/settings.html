@@ -61,14 +61,14 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="accentColor" class="form-label">Accent Color</label>
-                                    <select class="form-select" id="accentColor">
-                                        <option value="arctic">Arctic Blue</option>
-                                        <option value="sunset">Sunset Orange</option>
-                                        <option value="forest">Forest Green</option>
-                                        <option value="amethyst">Amethyst Purple</option>
+                                    <label for="theme" class="form-label">Theme</label>
+                                    <select class="form-select" id="theme">
                                         <option value="nineties">90s Video Game</option>
                                         <option value="steampunk">Steampunk</option>
+                                        <option value="amstrad">Amstrad CPC464 Green</option>
+                                        <option value="amiga">Amiga Classic</option>
+                                        <option value="mario">Mario Bros</option>
+                                        <option value="matrix">The Matrix</option>
                                         <option value="custom">Custom</option>
                                     </select>
                                 </div>
@@ -395,7 +395,7 @@ async function loadSettings() {
 function populateForm(settings) {
     document.getElementById('archivePath').value = settings.archive_path || '';
     document.getElementById('themeMode').value = settings.theme_mode || 'auto';
-    document.getElementById('accentColor').value = settings.accent_color || 'arctic';
+    document.getElementById('theme').value = settings.theme || 'nineties';
     document.getElementById('customPrimaryColor').value = settings.custom_primary_color || '#0d6efd';
     document.getElementById('customPrimaryColorHex').value = settings.custom_primary_color || '#0d6efd';
     document.getElementById('jefPath').value = settings.jef_path || '';
@@ -416,13 +416,13 @@ function updateStatusPanel() {
 // Apply theme settings from form inputs and save to localStorage
 function applyAndSaveThemeFromForm(doSave = true) {
     const themeMode = document.getElementById('themeMode').value;
-    const accentColor = document.getElementById('accentColor').value;
+    const theme = document.getElementById('theme').value;
     const customColor = document.getElementById('customPrimaryColor').value;
 
     if (doSave) {
         // Save to localStorage so other pages can access it
         localStorage.setItem('theme_mode', themeMode);
-        localStorage.setItem('accent_color', accentColor);
+        localStorage.setItem('theme', theme);
         localStorage.setItem('custom_primary_color', customColor);
     }
 
@@ -439,7 +439,7 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
     const settings = {
         archive_path: document.getElementById('archivePath').value,
         theme_mode: document.getElementById('themeMode').value,
-        accent_color: document.getElementById('accentColor').value,
+        theme: document.getElementById('theme').value,
         custom_primary_color: document.getElementById('customPrimaryColor').value,
         jef_path: document.getElementById('jefPath').value,
         enable_jef_integration: document.getElementById('enableJefIntegration').checked,
@@ -474,7 +474,7 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
 
 // Add event listeners for instant theme updates
 document.getElementById('themeMode').addEventListener('change', () => applyAndSaveThemeFromForm(true));
-document.getElementById('accentColor').addEventListener('change', () => applyAndSaveThemeFromForm(true));
+document.getElementById('theme').addEventListener('change', () => applyAndSaveThemeFromForm(true));
 document.getElementById('customPrimaryColor').addEventListener('input', () => {
     document.getElementById('customPrimaryColorHex').value = document.getElementById('customPrimaryColor').value;
     applyAndSaveThemeFromForm(true);
