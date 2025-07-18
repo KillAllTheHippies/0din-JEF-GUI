@@ -287,15 +287,14 @@ class ConfigManager:
         
         # Color palette based on accent color
         color_palettes = {
-            "blue": {"primary": "#0d6efd", "secondary": "#6610f2"},
-            "purple": {"primary": "#6f42c1", "secondary": "#6610f2"},
-            "green": {"primary": "#198754", "secondary": "#20c997"},
-            "orange": {"primary": "#fd7e14", "secondary": "#f0ad4e"},
-            "red": {"primary": "#dc3545", "secondary": "#e83e8c"},
-            "teal": {"primary": "#20c997", "secondary": "#17a2b8"}
+            "arctic": {"primary": "#0A84FF", "secondary": "#30B4FF"},      # A modern, cool blue
+            "sunset": {"primary": "#FF6B6B", "secondary": "#FFD166"},      # A warm, energetic orange/red
+            "forest": {"primary": "#2E8B57", "secondary": "#8FBC8F"},      # A natural, calming green
+            "amethyst": {"primary": "#9B59B6", "secondary": "#C39BD3"},    # A stylish, elegant purple
+            "custom": {"primary": self.get("custom_primary_color", "#0d6efd"), "secondary": "#6c757d"} # Custom color
         }
         
-        palette = color_palettes.get(accent_color, color_palettes["blue"])
+        palette = color_palettes.get(accent_color, color_palettes["arctic"])
         
         return {
             "--accent-primary": custom_color if accent_color == "custom" else palette["primary"],
