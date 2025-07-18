@@ -15,6 +15,8 @@ from markdown.extensions import codehilite, toc, tables
 # Import configuration manager
 from config_manager import config
 
+app = Flask(__name__)
+
 @app.route('/api/theme.css')
 def theme_css():
     """
@@ -28,10 +30,6 @@ def theme_css():
     css_rules += "}\n"
     
     return css_rules, 200, {'Content-Type': 'text/css'}
-
-
-
-app = Flask(__name__)
 
 # Initialize JEF based on configuration
 def initialize_jef():
