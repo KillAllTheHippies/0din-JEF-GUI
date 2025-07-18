@@ -15,6 +15,22 @@ from markdown.extensions import codehilite, toc, tables
 # Import configuration manager
 from config_manager import config
 
+@app.route('/api/theme.css')
+def theme_css():
+    """
+    Generate a dynamic CSS file with theme variables.
+    """
+    css_vars = config.get_theme_css_variables()
+    
+    css_rules = ":root {\n"
+    for var, value in css_vars.items():
+        css_rules += f"  {var}: {value};\n"
+    css_rules += "}\n"
+    
+    return css_rules, 200, {'Content-Type': 'text/css'}
+
+
+
 app = Flask(__name__)
 
 # Initialize JEF based on configuration

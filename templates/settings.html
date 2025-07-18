@@ -503,6 +503,25 @@ function applyThemeSettings() {
             document.body.classList.remove('dark-mode');
         }
     }
+
+    // Apply accent colors
+    const accentColor = document.getElementById('accentColor').value;
+    const customColor = document.getElementById('customPrimaryColor').value;
+    
+    const colorPalettes = {
+        "blue": {"primary": "#0d6efd", "secondary": "#6610f2"},
+        "purple": {"primary": "#6f42c1", "secondary": "#6610f2"},
+        "green": {"primary": "#198754", "secondary": "#20c997"},
+        "orange": {"primary": "#fd7e14", "secondary": "#f0ad4e"},
+        "red": {"primary": "#dc3545", "secondary": "#e83e8c"},
+        "teal": {"primary": "#20c997", "secondary": "#17a2b8"}
+    };
+
+    const palette = colorPalettes[accentColor] || colorPalettes["blue"];
+    const primaryColor = accentColor === 'custom' ? customColor : palette.primary;
+    
+    document.documentElement.style.setProperty('--accent-primary', primaryColor);
+    document.documentElement.style.setProperty('--accent-secondary', palette.secondary);
 }
 
 // Browse for archive folder
