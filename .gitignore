@@ -134,6 +134,10 @@ dmypy.json
 *.swo
 *~
 
+# App Settings
+app_settings.json
+app_settings.json.backup
+
 # OS
 .DS_Store
 .DS_Store?
