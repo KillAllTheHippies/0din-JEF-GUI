@@ -11,6 +11,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Fonts (for 90s theme) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('theme_css') }}">
     <style>
@@ -1219,6 +1224,97 @@
         .tree-file:hover {
             background: var(--bg-secondary);
         }
+
+        /* 90s Video Game Theme */
+        .nineties-theme, .nineties-theme body {
+            font-family: 'Press Start 2P', cursive !important;
+            background: #1E0342 !important; /* Deep purple background */
+            color: #F1F1F1 !important;
+        }
+
+        .nineties-theme .header {
+            background: #0E0220 !important;
+            border-bottom: 4px solid #913175;
+            text-shadow: 2px 2px #CD3275;
+        }
+
+        .nineties-theme .header h1 {
+            font-size: 1.5rem;
+            color: #F8E559; /* Bright yellow */
+        }
+
+        .nineties-theme .nav-link {
+            color: #F8E559 !important;
+        }
+        .nineties-theme .nav-link:hover, .nineties-theme .nav-link.active {
+            background: #913175 !important;
+            color: #FFFFFF !important;
+        }
+
+        .nineties-theme .search-container,
+        .nineties-theme .card,
+        .nineties-theme .filters-panel,
+        .nineties-theme .result-item,
+        .nineties-theme .sidebar,
+        .nineties-theme .export-buttons,
+        .nineties-theme .jef-controls-section {
+            background: #0E0220 !important;
+            border-radius: 0 !important;
+            border: 4px solid #913175 !important;
+            box-shadow: none !important;
+        }
+
+        .nineties-theme .form-control,
+        .nineties-theme .form-select,
+        .nineties-theme .btn {
+            font-family: 'Press Start 2P', cursive !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            border: 4px solid #00A9FF !important; /* Bright cyan border */
+            background: #1E0342 !important;
+            color: #FFFFFF !important;
+        }
+
+        .nineties-theme .form-control:focus {
+            border-color: #F8E559 !important; /* Yellow focus */
+            color: #F8E559 !important;
+        }
+
+        .nineties-theme .btn-primary {
+            background: #00BF63 !important; /* Neon green */
+            border-color: #F8E559 !important;
+            color: #0E0220 !important;
+            font-weight: bold;
+        }
+        .nineties-theme .btn-primary:hover {
+            background: #F8E559 !important;
+            border-color: #00BF63 !important;
+        }
+
+        .nineties-theme .result-title {
+            color: #00A9FF !important; /* Bright cyan */
+        }
+
+        .nineties-theme .result-path {
+            background: #1E0342 !important;
+            border-color: #CD3275 !important;
+            color: #CD3275 !important; /* Magenta */
+            font-size: 0.7rem;
+        }
+
+        .nineties-theme .match-count {
+            background: #913175 !important;
+            color: #F8E559 !important;
+        }
+
+        .nineties-theme .tree-item.selected {
+            background: #913175 !important;
+            color: #F8E559 !important;
+        }
+
+        .nineties-theme .tree-toggle, .nineties-theme .tree-icon {
+            color: #00BF63 !important;
+        }
     </style>
 </head>
 <body>
@@ -1259,19 +1355,72 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <!-- Theme Toggle Script -->
+    <!-- Theme Application Script -->
     <script>
-        // Theme management
+        function applyThemeSettings() {
+            const themeMode = localStorage.getItem('theme_mode') || 'auto';
+            const accentColor = localStorage.getItem('accent_color') || 'arctic';
+            const customColor = localStorage.getItem('custom_primary_color') || '#0d6efd';
+
+            // Handle 90s theme first as it's a full override
+            if (accentColor === 'nineties') {
+                document.body.classList.add('nineties-theme');
+                document.body.classList.remove('dark-mode', 'light-mode');
+                return;
+            }
+            
+            document.body.classList.remove('nineties-theme');
+
+            // Apply light/dark mode
+            let effectiveTheme = themeMode;
+            if (themeMode === 'auto') {
+                effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            if (effectiveTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light-mode');
+            } else {
+                document.body.classList.add('light-mode');
+                document.body.classList.remove('dark-mode');
+            }
+
+            // Apply accent colors for non-90s themes
+            const colorPalettes = {
+                "arctic": {"primary": "#0A84FF", "secondary": "#30B4FF"},
+                "sunset": {"primary": "#FF6B6B", "secondary": "#FFD166"},
+                "forest": {"primary": "#2E8B57", "secondary": "#8FBC8F"},
+                "amethyst": {"primary": "#9B59B6", "secondary": "#C39BD3"}
+            };
+
+            const palette = colorPalettes[accentColor] || colorPalettes["arctic"];
+            const primaryColor = accentColor === 'custom' ? customColor : palette.primary;
+            
+            document.documentElement.style.setProperty('--accent-primary', primaryColor);
+            document.documentElement.style.setProperty('--accent-secondary', palette.secondary);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            applyThemeSettings();
+            updateActiveNavigation();
+        });
+    </script>
+
+    <!-- Old Theme Toggle Script (to be removed or integrated) -->
+    <script>
+        // This logic is now mostly handled by applyThemeSettings
         function getPreferredTheme() {
             const stored = localStorage.getItem('theme');
             if (stored) return stored;
-            
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
 
         function setTheme(theme) {
-            document.body.className = theme === 'dark' ? 'dark-mode' : 'light-mode';
-            localStorage.setItem('theme', theme);
+            // This function is now effectively replaced by applyThemeSettings
+            // but we can keep the toggle functionality separate.
+            localStorage.setItem('theme_mode', theme);
+            applyThemeSettings(); // Re-apply all theme settings
             
             const themeIcon = document.getElementById('themeIcon');
             const themeText = document.getElementById('themeText');
@@ -1286,16 +1435,17 @@
         }
 
         function toggleTheme() {
-            const currentTheme = localStorage.getItem('theme') || getPreferredTheme();
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const currentTheme = localStorage.getItem('theme_mode') || 'auto';
+            let newTheme;
+            if (currentTheme === 'auto') {
+                // If auto, toggle based on current actual theme
+                const actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                newTheme = actualTheme === 'dark' ? 'light' : 'dark';
+            } else {
+                newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            }
             setTheme(newTheme);
         }
-
-        // Initialize theme on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            setTheme(getPreferredTheme());
-            updateActiveNavigation();
-        });
 
         // Update active navigation based on current page
         function updateActiveNavigation() {
@@ -1312,8 +1462,9 @@
 
         // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-            if (!localStorage.getItem('theme')) {
-                setTheme(e.matches ? 'dark' : 'light');
+            const storedMode = localStorage.getItem('theme_mode');
+            if (!storedMode || storedMode === 'auto') {
+                applyThemeSettings();
             }
         });
     </script>
