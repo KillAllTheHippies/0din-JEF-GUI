@@ -33,3 +33,40 @@ def test_search(tmp_path):
     results = engine.search(query)
     assert len(results) == 1
     assert results[0]['title'] == 'First'
+
+
+def test_search_folder_filters(tmp_path):
+    folder_a = tmp_path / 'a'
+    folder_a.mkdir()
+    folder_b = tmp_path / 'b'
+    folder_b.mkdir()
+
+    create_file(folder_a, 'file1.md', 'Hello world')
+    create_file(folder_b, 'file2.md', 'Hello world')
+
+    engine = ChatSearchEngine(str(tmp_path))
+
+    query_included = {
+        'terms': 'Hello',
+        'mode': 'ALL',
+        'includedFolders': ['a']
+    }
+    results_included = engine.search(query_included)
+    assert len(results_included) == 1
+    assert results_included[0]['path'].startswith('a/')
+
+    query_excluded = {
+        'terms': 'Hello',
+        'mode': 'ALL',
+        'excludedFolders': ['a']
+    }
+    results_excluded = engine.search(query_excluded)
+    assert len(results_excluded) == 1
+    assert results_excluded[0]['path'].startswith('b/')
+
+
+def test_search_in_content_any_case(tmp_path):
+    engine = ChatSearchEngine(str(tmp_path))
+    match, positions = engine.search_in_content('Foo Bar', 'bar', mode='ANY', case_sensitive=False)
+    assert match
+    assert positions
