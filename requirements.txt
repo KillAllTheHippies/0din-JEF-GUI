@@ -3,4 +3,3 @@ PyYAML==6.0.1
 markdown==3.5.1
 Pygments==2.16.1
 Werkzeug==2.3.7
-tkinter
