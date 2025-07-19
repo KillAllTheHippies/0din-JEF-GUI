@@ -142,8 +142,11 @@ class ChatSearchEngine:
                 metadata = {}
                 body_content = content
             
-            # Extract title from content or filename
-            title = metadata.get('aliases', '')
+            # Extract title from metadata or fallbacks
+            # Some archives use `title` while others may use `aliases` for the
+            # conversation title. Try both before falling back to the content
+            # or filename.
+            title = metadata.get('title') or metadata.get('aliases', '')
             if not title:
                 # Try to find title in content
                 title_match = re.search(r'^# Title: (.+)$', body_content, re.MULTILINE)
