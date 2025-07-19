@@ -211,8 +211,12 @@ class ConfigManager:
         
         # Validate color format
         custom_color = self.get("custom_primary_color")
-        if custom_color and not custom_color.startswith("#") or len(custom_color) != 7:
-            errors["custom_primary_color"] = "Must be a valid hex color (e.g., #0d6efd)"
+        if custom_color and (
+            not custom_color.startswith("#") or len(custom_color) != 7
+        ):
+            errors["custom_primary_color"] = (
+                "Must be a valid hex color (e.g., #0d6efd)"
+            )
         
         return errors
     
