@@ -43,7 +43,7 @@ class ConfigManager:
             
             # Theme settings
             "theme_mode": "auto",  # auto, light, dark
-            "theme": "nineties",  # nineties, steampunk, amstrad, amiga, mario, matrix, custom
+            "theme": "nineties",  # nineties, steampunk, amstrad, amiga, mario, matrix, sage, terracotta, moss, dusk, custom
             "custom_primary_color": "#0d6efd",
             
             # Search preferences
@@ -293,6 +293,10 @@ class ConfigManager:
             "amiga": {"primary": "#FF6600", "secondary": "#0066FF"},       # Classic Amiga orange and blue
             "mario": {"primary": "#FF0000", "secondary": "#00AA00"},       # Mario red and green
             "matrix": {"primary": "#00FF41", "secondary": "#008F11"},      # Matrix green
+            "sage": {"primary": "#8A9A8B", "secondary": "#B5A592"},        # Sage green and clay
+            "terracotta": {"primary": "#C65D07", "secondary": "#F5E6D3"},  # Terracotta and cream
+            "moss": {"primary": "#6B7A5A", "secondary": "#A8A090"},        # Moss green and stone
+            "dusk": {"primary": "#8B7D8B", "secondary": "#D4C4A8"},        # Dusk purple and dawn cream
             "custom": {"primary": self.get("custom_primary_color", "#0d6efd"), "secondary": "#6c757d"} # Custom color
         }
         
