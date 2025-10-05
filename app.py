@@ -1039,6 +1039,80 @@ def get_jef_tests():
     
     return jsonify({'tests': tests})
 
+def _run_jef_analysis(content, test_type, reference_text):
+    """Helper function to run a JEF analysis test."""
+    result = None
+    error = None
+
+    try:
+        if test_type == 'tiananmen':
+            if tiananmen is None:
+                error = 'Tiananmen module not available'
+            else:
+                result = tiananmen.score(content)
+        elif test_type == 'nerve_agent':
+            if nerve_agent is None:
+                error = 'Nerve agent module not available'
+            else:
+                result = nerve_agent.score(content)
+        elif test_type == 'meth':
+            if meth is None:
+                error = 'Meth module not available'
+            else:
+                result = meth.score(content)
+        elif test_type == 'harry_potter':
+            if harry_potter is None:
+                error = 'Harry Potter module not available'
+            elif not reference_text:
+                return None, 'Reference text required for Harry Potter analysis'
+            else:
+                result = harry_potter.score(content, reference_text)
+        elif test_type == 'copyright':
+            if copyrights is None:
+                error = 'Copyright module not available'
+            elif not reference_text:
+                return None, 'Reference text required for copyright analysis'
+            else:
+                result = copyrights.score(content, reference_text)
+        else:
+            error = f'Unknown test type: {test_type}'
+
+    except Exception as e:
+        error = str(e)
+
+    return result, error
+
+@app.route('/api/jef-analyze-text', methods=['POST'])
+def jef_analyze_text():
+    """Run JEF analysis on arbitrary text content."""
+    if not JEF_AVAILABLE:
+        return jsonify({'error': 'JEF not available'}), 400
+
+    try:
+        data = request.get_json()
+        content = data.get('content', '')
+        test_type = data.get('test_type')
+        reference_text = data.get('reference_text', '')
+
+        if not test_type:
+            return jsonify({'error': 'Missing test_type'}), 400
+
+        result, error = _run_jef_analysis(content, test_type, reference_text)
+
+        return jsonify({
+            'success': error is None,
+            'result': result,
+            'error': error,
+            'file_info': {
+                'path': 'sandbox',
+                'title': 'Sandbox Analysis',
+                'content_length': len(content)
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/jef-analyze', methods=['POST'])
 def jef_analyze():
     """Run JEF analysis on file content"""
@@ -1062,45 +1136,8 @@ def jef_analyze():
         file_info = search_engine.extract_metadata(full_path)
         content = file_info['content']
         
-        # Run appropriate JEF test
-        result = None
-        error = None
-        
-        try:
-            if test_type == 'tiananmen':
-                if tiananmen is None:
-                    error = 'Tiananmen module not available'
-                else:
-                    result = tiananmen.score(content)
-            elif test_type == 'nerve_agent':
-                if nerve_agent is None:
-                    error = 'Nerve agent module not available'
-                else:
-                    result = nerve_agent.score(content)
-            elif test_type == 'meth':
-                if meth is None:
-                    error = 'Meth module not available'
-                else:
-                    result = meth.score(content)
-            elif test_type == 'harry_potter':
-                if harry_potter is None:
-                    error = 'Harry Potter module not available'
-                elif not reference_text:
-                    return jsonify({'error': 'Reference text required for Harry Potter analysis'}), 400
-                else:
-                    result = harry_potter.score(content, reference_text)
-            elif test_type == 'copyright':
-                if copyrights is None:
-                    error = 'Copyright module not available'
-                elif not reference_text:
-                    return jsonify({'error': 'Reference text required for copyright analysis'}), 400
-                else:
-                    result = copyrights.score(content, reference_text)
-            else:
-                return jsonify({'error': f'Unknown test type: {test_type}'}), 400
-                
-        except Exception as e:
-            error = str(e)
+        # Run analysis using helper
+        result, error = _run_jef_analysis(content, test_type, reference_text)
         
         return jsonify({
             'success': error is None,
